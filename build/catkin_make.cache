@@ -1,0 +1,2 @@
+nankai_mower
+-DCMAKE_BUILD_TYPE=RelWithDebInfo -DCATKIN_DEVEL_PREFIX=/home/mower/mower/NankaiMowerROS/devel -DCMAKE_INSTALL_PREFIX=/home/mower/mower/NankaiMowerROS/install -G Unix Makefiles
