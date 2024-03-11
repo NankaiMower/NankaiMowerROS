@@ -2,7 +2,7 @@ prefix=/home/mower/project/NankaiMowerROS/install
 
 Name: nankai_mower
 Description: Description of nankai_mower
-Version: 0.0.0
+Version: 1.0.0
 Cflags: 
 Libs: -L${prefix}/lib 
 Requires: 

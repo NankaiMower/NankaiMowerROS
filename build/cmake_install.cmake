@@ -131,6 +131,7 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/mower/project/NankaiMowerROS/build/gtest/cmake_install.cmake")
+  include("/home/mower/project/NankaiMowerROS/build/map/cmake_install.cmake")
   include("/home/mower/project/NankaiMowerROS/build/nankai_mower/cmake_install.cmake")
 
 endif()

@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>nankai_mower</name>
-  <version>2024.3</version>
-  <description>The nankai_mower package</description>
+  <version>1.0.0</version>
+  <description>The nankai_mower package (2024.3)</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->
   <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
-  <maintainer email="junyaohu@mail.nankai.edu.cn">Junyao Hu</maintainer>
+  <maintainer email="hujunyao@mail.nankai.edu.cn">Junyao Hu</maintainer>
 
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
@@ -25,10 +25,10 @@
   <!-- Author tags are optional, multiple are allowed, one per tag -->
   <!-- Authors do not have to be maintainers, but could be -->
   <!-- Example: -->
-  <author email="">Xin Liu</author>
-  <author email="">Junyao Hu</author>
-  <author email="">Rong Qin</author>
-  <author email="">Lishen Qu</author>
+  <author email="xinliu_0209@163.com">Xin Liu</author>
+  <author email="hujunyao@mail.nankai.edu.cn">Junyao Hu</author>
+  <author email="3240667471@qq.com">Rong Qin</author>
+  <author email="978856022@qq.com">Lishen Qu</author>
 
 
   <!-- The *depend tags are used to specify dependencies -->
