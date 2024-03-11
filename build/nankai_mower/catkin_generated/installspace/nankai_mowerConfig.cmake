@@ -67,14 +67,14 @@ set(nankai_mower_CONFIG_INCLUDED TRUE)
 
 # set variables for source/devel/install prefixes
 if("FALSE" STREQUAL "TRUE")
-  set(nankai_mower_SOURCE_PREFIX /home/mower/mower/NankaiMowerROS/src/nankai_mower)
-  set(nankai_mower_DEVEL_PREFIX /home/mower/mower/NankaiMowerROS/devel)
+  set(nankai_mower_SOURCE_PREFIX /home/mower/project/NankaiMowerROS/src/nankai_mower)
+  set(nankai_mower_DEVEL_PREFIX /home/mower/project/NankaiMowerROS/devel)
   set(nankai_mower_INSTALL_PREFIX "")
   set(nankai_mower_PREFIX ${nankai_mower_DEVEL_PREFIX})
 else()
   set(nankai_mower_SOURCE_PREFIX "")
   set(nankai_mower_DEVEL_PREFIX "")
-  set(nankai_mower_INSTALL_PREFIX /home/mower/mower/NankaiMowerROS/install)
+  set(nankai_mower_INSTALL_PREFIX /home/mower/project/NankaiMowerROS/install)
   set(nankai_mower_PREFIX ${nankai_mower_INSTALL_PREFIX})
 endif()
 
@@ -154,7 +154,7 @@ foreach(library ${libraries})
     set(lib_path "")
     set(lib "${library}-NOTFOUND")
     # since the path where the library is found is returned we have to iterate over the paths manually
-    foreach(path /home/mower/mower/NankaiMowerROS/install/lib;/opt/ros/noetic/lib)
+    foreach(path /home/mower/project/NankaiMowerROS/install/lib;/opt/ros/noetic/lib)
       find_library(lib ${library}
         PATHS ${path}
         NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)

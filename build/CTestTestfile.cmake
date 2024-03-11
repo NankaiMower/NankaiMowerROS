@@ -1,6 +1,6 @@
 # CMake generated Testfile for 
-# Source directory: /home/mower/mower/NankaiMowerROS/src
-# Build directory: /home/mower/mower/NankaiMowerROS/build
+# Source directory: /home/mower/project/NankaiMowerROS/src
+# Build directory: /home/mower/project/NankaiMowerROS/build
 # 
 # This file includes the relevant testing commands required for 
 # testing this directory and lists subdirectories to be tested as well.

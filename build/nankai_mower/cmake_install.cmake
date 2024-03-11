@@ -1,8 +1,8 @@
-# Install script for directory: /home/mower/mower/NankaiMowerROS/src/nankai_mower
+# Install script for directory: /home/mower/project/NankaiMowerROS/src/nankai_mower
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/mower/mower/NankaiMowerROS/install")
+  set(CMAKE_INSTALL_PREFIX "/home/mower/project/NankaiMowerROS/install")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
@@ -38,21 +38,21 @@ if(NOT DEFINED CMAKE_CROSSCOMPILING)
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/mower/mower/NankaiMowerROS/build/nankai_mower/catkin_generated/installspace/nankai_mower.pc")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig" TYPE FILE FILES "/home/mower/project/NankaiMowerROS/build/nankai_mower/catkin_generated/installspace/nankai_mower.pc")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/nankai_mower/cmake" TYPE FILE FILES
-    "/home/mower/mower/NankaiMowerROS/build/nankai_mower/catkin_generated/installspace/nankai_mowerConfig.cmake"
-    "/home/mower/mower/NankaiMowerROS/build/nankai_mower/catkin_generated/installspace/nankai_mowerConfig-version.cmake"
+    "/home/mower/project/NankaiMowerROS/build/nankai_mower/catkin_generated/installspace/nankai_mowerConfig.cmake"
+    "/home/mower/project/NankaiMowerROS/build/nankai_mower/catkin_generated/installspace/nankai_mowerConfig-version.cmake"
     )
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/nankai_mower" TYPE FILE FILES "/home/mower/mower/NankaiMowerROS/src/nankai_mower/package.xml")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/share/nankai_mower" TYPE FILE FILES "/home/mower/project/NankaiMowerROS/src/nankai_mower/package.xml")
 endif()
 
 if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_COMPONENT)
-  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/nankai_mower" TYPE PROGRAM FILES "/home/mower/mower/NankaiMowerROS/build/nankai_mower/catkin_generated/installspace/hello.py")
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/nankai_mower" TYPE PROGRAM FILES "/home/mower/project/NankaiMowerROS/build/nankai_mower/catkin_generated/installspace/hello.py")
 endif()
 

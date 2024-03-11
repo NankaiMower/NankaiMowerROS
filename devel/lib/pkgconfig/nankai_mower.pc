@@ -1,4 +1,4 @@
-prefix=/home/mower/mower/NankaiMowerROS/devel
+prefix=/home/mower/project/NankaiMowerROS/devel
 
 Name: nankai_mower
 Description: Description of nankai_mower

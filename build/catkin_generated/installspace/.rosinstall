@@ -1,2 +1,2 @@
 - setup-file:
-    local-name: /home/mower/mower/NankaiMowerROS/install/setup.sh
+    local-name: /home/mower/project/NankaiMowerROS/install/setup.sh
