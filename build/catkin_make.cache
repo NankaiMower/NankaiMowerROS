@@ -1,2 +1,0 @@
-map:nankai_mower
--DCATKIN_DEVEL_PREFIX=/home/mower/project/NankaiMowerROS/devel -DCMAKE_INSTALL_PREFIX=/home/mower/project/NankaiMowerROS/install -G Unix Makefiles

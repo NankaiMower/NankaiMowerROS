@@ -4,5 +4,6 @@
     ],
     "python.analysis.extraPaths": [
         "/opt/ros/noetic/lib/python3/dist-packages"
-    ]
+    ],
+    "cmake.sourceDirectory": "/home/mower/project/NankaiMowerROS/src/nankai_mower"
 }
