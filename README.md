@@ -13,7 +13,7 @@ docker run \
     --device /dev/ttyAMA4:/dev/ttyAMA4 \
     --network="host" \
     -it \
-    ros:noetic-robot \
+    nankaimower:baseline \
     /bin/bash
 ```
 
