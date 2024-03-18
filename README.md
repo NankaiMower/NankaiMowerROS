@@ -1,6 +1,42 @@
 # NankaiMowerROS
 割草机ROS软件和算法 (开发中)
 
+## 开发备忘
+
+```
+docker run \
+    --volume $HOME/project/NankaiMowerROS:/opt/NankaiMower \
+	--device /dev/ttyAMA0:/dev/ttyAMA0 \
+    --device /dev/ttyAMA1:/dev/ttyAMA1 \
+    --device /dev/ttyAMA2:/dev/ttyAMA2 \
+    --device /dev/ttyAMA3:/dev/ttyAMA3 \
+    --device /dev/ttyAMA4:/dev/ttyAMA4 \
+    --network="host" \
+    -it \
+    ros:noetic-robot \
+    /bin/bash
+```
+
+
+```
+sudo chmod 666 /dev/ttyAMA0
+
+source devel/setup.bash; source mower_config.sh
+```
+
+```
+pip install empy==3.3.4
+```
+
+通信: mower_comms:
+
+```
+catkin_make -DCATKIN_WHITELIST_PACKAGES="mower_msgs;ntrip_client;;vesc_driver;xesc;xesc_2040_driver;xesc_driver;xesc_interface;xesc_msgs;xbot_msgs;xbot_driver_gps;vesc_driver;mower_comms"
+source devel/setup.bash; source mower_config.sh
+sudo chmod 666 /dev/ttyAMA0
+roslaunch open_mower _comms.launch
+```
+
 # ROS Workspace
 
 [![Build](https://github.com/ClemensElflein/open_mower_ros/actions/workflows/build-image.yaml/badge.svg)](https://github.com/ClemensElflein/open_mower_ros/actions/workflows/build-image.yaml)

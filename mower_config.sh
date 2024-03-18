@@ -24,11 +24,11 @@ export OM_DATUM_LONG=11.0
 # NTRIP Settings
 # Set to False if using external radio plugged into the Ardusimple board.
 export OM_USE_NTRIP=True
-export OM_NTRIP_HOSTNAME=192.168.178.55
-export OM_NTRIP_PORT=2101
-export OM_NTRIP_USER=gps
-export OM_NTRIP_PASSWORD=gps
-export OM_NTRIP_ENDPOINT=BASE1
+export OM_NTRIP_HOSTNAME=rtk.huacenav.com
+export OM_NTRIP_PORT=8001
+export OM_NTRIP_USER=cytt3622
+export OM_NTRIP_PASSWORD=89138680
+export OM_NTRIP_ENDPOINT=RTCM33
 
 ################################
 ## Hardware Specific Settings ##

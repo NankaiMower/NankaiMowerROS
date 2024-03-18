@@ -9,13 +9,13 @@ project(mower_comms)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
   mower_msgs
-        sensor_msgs
+  sensor_msgs
   roscpp
   serial
-        xesc_driver
-        xesc_msgs
-        xesc_interface
-        xbot_msgs
+  xesc_driver
+  xesc_msgs
+  xesc_interface
+  xbot_msgs
 )
 
 find_package(

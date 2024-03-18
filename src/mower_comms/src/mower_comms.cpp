@@ -165,6 +165,8 @@ void publishStatus() {
     mower_msgs::Status status_msg;
     status_msg.stamp = ros::Time::now();
 
+    ROS_INFO_STREAM("Status bitmask: " << (int)last_ll_status.status_bitmask);
+
     if (last_ll_status.status_bitmask & 1) {
         // LL OK, fill the message
         status_msg.mower_status = mower_msgs::Status::MOWER_STATUS_OK;
@@ -385,22 +387,31 @@ void handleLowLevelIMU(struct ll_imu *imu) {
 
 
 int main(int argc, char **argv) {
+    
+    // mower_comms 节点初始化
     ros::init(argc, argv, "mower_comms");
 
+    // 传感器磁感应信息
     sensor_mag_msg.header.seq = 0;
+    // 传感器IMU信息
     sensor_imu_msg.header.seq = 0;
 
     ros::NodeHandle n;
+    // 四个子命名空间（通信、左右行走电机、割草电机）
     ros::NodeHandle paramNh("~");
     ros::NodeHandle leftParamNh("~/left_xesc");
     ros::NodeHandle mowerParamNh("~/mower_xesc");
     ros::NodeHandle rightParamNh("~/right_xesc");
 
-
-
+    // 高电平控制服务，服务中定义了一系列的命令，每个命令都有一个唯一的uint8类型的标识符。
+    // COMMAND_START           (值为1)：  这个命令用于启动机器人的操作
+    // COMMAND_HOME            (值为2)：  这个命令可能用于指示机器人返回家位置
+    // COMMAND_S1              (值为3)：  
+    // COMMAND_S2              (值为4)：  
+    // COMMAND_RESET_EMERGENCY (值为254)：这个命令用于重置机器人的紧急状态
+    // COMMAND_DELETE_MAPS     (值为255)：这个命令用于删除存储在机器人系统中的地图数据
     highLevelClient = n.serviceClient<mower_msgs::HighLevelControlSrv>(
             "mower_service/high_level_control");
-
 
     std::string ll_serial_port_name;
     if (!paramNh.getParam("ll_serial_port", ll_serial_port_name)) {
