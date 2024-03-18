@@ -21,6 +21,7 @@ docker run \
 ```
 sudo chmod 666 /dev/ttyAMA0
 
+cd /opt/NankaiMower/
 source devel/setup.bash; source mower_config.sh
 ```
 

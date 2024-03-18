@@ -165,7 +165,7 @@ void publishStatus() {
     mower_msgs::Status status_msg;
     status_msg.stamp = ros::Time::now();
 
-    ROS_INFO_STREAM("Status bitmask: " << (int)last_ll_status.status_bitmask);
+    // ROS_INFO_STREAM("Status bitmask: " << (int)last_ll_status.status_bitmask);
 
     if (last_ll_status.status_bitmask & 1) {
         // LL OK, fill the message
@@ -183,6 +183,7 @@ void publishStatus() {
     status_msg.sound_module_busy = (last_ll_status.status_bitmask & 0b01000000) != 0;
     status_msg.ui_board_available = (last_ll_status.status_bitmask & 0b10000000) != 0;
 
+    // 超声波雷达？
     for (uint8_t i = 0; i < 5; i++) {
         status_msg.ultrasonic_ranges[i] = last_ll_status.uss_ranges_m[i];
     }
@@ -413,36 +414,52 @@ int main(int argc, char **argv) {
     highLevelClient = n.serviceClient<mower_msgs::HighLevelControlSrv>(
             "mower_service/high_level_control");
 
+    // 名称来自参数节点 ll_serial_port，参数在 comms_general_params.yaml
+    // 由 _comms.launch 调用，构建了 mower_comms 的私有参数 rosparam 
     std::string ll_serial_port_name;
     if (!paramNh.getParam("ll_serial_port", ll_serial_port_name)) {
         ROS_ERROR_STREAM("Error getting low level serial port parameter. Quitting.");
         return 1;
     }
 
-    paramNh.getParam("wheel_ticks_per_m",wheel_ticks_per_m);
-    paramNh.getParam("wheel_distance_m",wheel_distance_m);
+    // 如下参数由环境变量 OM_WHEEL_TICKS_PER_M 和 OM_WHEEL_DISTANCE_M 决定
+    // default_environment.sh 具有默认值
+    // 如果不用默认值，应该在 mower_config.sh 中设置
+    paramNh.getParam("wheel_ticks_per_m", wheel_ticks_per_m);
+    paramNh.getParam("wheel_distance_m", wheel_distance_m);
 
+    // Wheel ticks [1/m]: 1600
+    // Wheel distance [m]: 0.325
     ROS_INFO_STREAM("Wheel ticks [1/m]: " << wheel_ticks_per_m);
     ROS_INFO_STREAM("Wheel distance [m]: " << wheel_distance_m);
 
+    // 各个电机速度
     speed_l = speed_r = speed_mow = 0;
 
-
+    // 名称来自参数节点 xesc_type
+    // 由 _comms.launch 调用，构建了 mower_comms 的私有参数 rosparam  
+    // 现在使用的是 xesc_mini 版本， 配置在  comms_general_params.yaml
     // Setup XESC interfaces
     if(mowerParamNh.hasParam("xesc_type")) {
         mow_xesc_interface = new xesc_driver::XescDriver(n, mowerParamNh);
+        left_xesc_interface = new xesc_driver::XescDriver(n, leftParamNh);
+        right_xesc_interface = new xesc_driver::XescDriver(n, rightParamNh);
     } else {
         mow_xesc_interface = nullptr;
+        left_xesc_interface = nullptr;
+        right_xesc_interface = nullptr;
     }
 
-    left_xesc_interface = new xesc_driver::XescDriver(n, leftParamNh);
-    right_xesc_interface = new xesc_driver::XescDriver(n, rightParamNh);
-
-
+    // 机器状态
+    // 见 mower_msgs/msg/Status.msg
     status_pub = n.advertise<mower_msgs::Status>("mower/status", 1);
+    // 车轮相关，有四个轮子的消息，后面只用两个轮子
+    // 见 lib/xbot_msgs/msg/WheelTick.msg
     wheel_tick_pub = n.advertise<xbot_msgs::WheelTick>("mower/wheel_ticks", 1);
 
+    // IMU 原始数据，sensor_msgs 是 ROS 自带标准库
     sensor_imu_pub = n.advertise<sensor_msgs::Imu>("imu/data_raw", 1);
+    // IMU 磁场数据，sensor_msgs 是 ROS 自带标准库
     sensor_mag_pub = n.advertise<sensor_msgs::MagneticField>("imu/mag", 1);
     ros::ServiceServer mow_service = n.advertiseService("mower_service/mow_enabled", setMowEnabled);
     ros::ServiceServer emergency_service = n.advertiseService("mower_service/emergency", setEmergencyStop);

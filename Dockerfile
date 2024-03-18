@@ -42,10 +42,15 @@ COPY --link --from=fetch /opt/NankaiMowerROS/src/lib/slic3r_coverage_planner /op
 
 WORKDIR /opt/slic3r_coverage_planner_ws
 
-RUN rosdep install --from-paths src --ignore-src --simulate | \
-    sed --expression '1d' | sort | tr -d '\n' | sed --expression 's/  apt-get install//g' > apt-install_list && \
-    apt-get update && apt-get install --no-install-recommends --yes $(cat apt-install_list) && \
-    rm -rf /var/lib/apt/lists/* apt-install_list
+RUN rosdep install \
+    --from-paths src \
+    --ignore-src \
+    --simulate \
+    | sed --expression '1d' | sort | tr -d '\n' | sed --expression 's/  apt-get install//g' > apt-install_list \
+    && apt-get update \
+    && apt-get install --no-install-recommends --yes $(cat apt-install_list) \
+    && rm -rf /var/lib/apt/lists/* apt-install_list
+    
 RUN bash -c "source /opt/ros/$ROS_DISTRO/setup.bash && catkin_make"
 RUN bash -c "source /opt/ros/$ROS_DISTRO/setup.bash && source /opt/slic3r_coverage_planner_ws/devel/setup.bash && catkin_make -DCMAKE_INSTALL_PREFIX=/opt/prebuilt/slic3r_coverage_planner install"
 
@@ -61,9 +66,12 @@ FROM fetch as dependencies
 WORKDIR /opt/NankaiMowerROS
 
 # This creates the sorted list of apt-get install commands.
-RUN apt-get update && \
-    rosdep install --from-paths src --ignore-src --simulate | \
-    sed --expression '1d' | sort | tr -d '\n' | sed --expression 's/  apt-get install//g' > /apt-install_list \
+RUN apt-get update \
+    && rosdep install \
+    --from-paths src \
+    --ignore-src \
+    --simulate \
+    | sed --expression '1d' | sort | tr -d '\n' | sed --expression 's/  apt-get install//g' > /apt-install_list \
     && rm -rf /var/lib/apt/lists/*
 
 # We can't derive this from "dependencies" because "dependencies" will be rebuilt every time, but apt install should only be done if needed
@@ -94,4 +102,5 @@ COPY .github/assets/NankaiMower_entrypoint.sh /NankaiMower_entrypoint.sh
 RUN chmod +x /NankaiMower_entrypoint.sh
 
 ENTRYPOINT ["/NankaiMower_entrypoint.sh"]
-CMD ["bash", "-c", "service nginx start; service mosquitto start; roslaunch open_mower open_mower.launch --screen"]
+# CMD ["bash", "-c", "service nginx start; service mosquitto start; roslaunch open_mower open_mower.launch --screen"]
+CMD ["bash"]
