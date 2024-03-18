@@ -1,3 +1,0 @@
-<launch>
-    <node pkg="map" type="map_service" name="map_service" output="screen"/>
-</launch>
