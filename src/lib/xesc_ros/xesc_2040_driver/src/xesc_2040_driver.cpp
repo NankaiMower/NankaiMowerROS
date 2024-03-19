@@ -91,8 +91,6 @@ void xesc_2040_driver::Xesc2040Driver::getStatus(xesc_msgs::XescStateStamped &st
     state_msg.state.current_input = status.current_input;
     state_msg.state.duty_cycle = status.duty_cycle;
     state_msg.state.tacho = status.tacho;
-    state_msg.state.tacho_absolute = status.tacho_absolute;
-    state_msg.state.direction = status.direction;
     state_msg.state.fault_code = status.fault_code;
 }
 
@@ -111,8 +109,6 @@ void xesc_2040_driver::Xesc2040Driver::getStatusBlocking(xesc_msgs::XescStateSta
     state_msg.state.current_input = status.current_input;
     state_msg.state.duty_cycle = status.duty_cycle;
     state_msg.state.tacho = status.tacho;
-    state_msg.state.tacho_absolute = status.tacho_absolute;
-    state_msg.state.direction = status.direction;
     state_msg.state.fault_code = status.fault_code;
 }
 

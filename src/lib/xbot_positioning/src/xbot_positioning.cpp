@@ -30,7 +30,7 @@ ros::Publisher kalman_state;
 ros::Publisher dbg_expected_motion_vector;
 
 // The kalman filters
-xbot::positioning::xbot_positioning_core core{};
+xbot::positioning::xbot_positioning_core core;
 
 // True, if we don't want to do gyro calibration on launch
 bool skip_gyro_calibration;
@@ -59,9 +59,6 @@ double max_gps_accuracy;
 
 // True, if we should publish debug topics (expected motion vector and kalman state)
 bool publish_debug;
-
-// Antenna offset (offset between point of rotation and antenna)
-double antenna_offset_x, antenna_offset_y;
 
 nav_msgs::Odometry odometry;
 xbot_positioning::KalmanState state_msg;
@@ -181,8 +178,8 @@ void onWheelTicks(const xbot_msgs::WheelTick::ConstPtr &msg) {
     }
     double dt = (msg->stamp - last_ticks.stamp).toSec();
 
-    double d_wheel_l = (double) (msg->wheel_ticks_rl - last_ticks.wheel_ticks_rl) * (1/(double)msg->wheel_tick_factor);
-    double d_wheel_r = (double) (msg->wheel_ticks_rr - last_ticks.wheel_ticks_rr) * (1/(double)msg->wheel_tick_factor);
+    double d_wheel_l = (double) (msg->wheel_ticks_rl - last_ticks.wheel_ticks_rl) * (1/1600.0);
+    double d_wheel_r = (double) (msg->wheel_ticks_rr - last_ticks.wheel_ticks_rr) * (1/1600.0);
 
     if(msg->wheel_direction_rl) {
         d_wheel_l *= -1.0;
@@ -313,8 +310,6 @@ int main(int argc, char **argv) {
     valid_gps_samples = 0;
     gps_outlier_count = 0;
 
-    antenna_offset_x = antenna_offset_y = 0;
-
     ros::NodeHandle n;
     ros::NodeHandle paramNh("~");
 
@@ -326,12 +321,6 @@ int main(int argc, char **argv) {
     paramNh.param("min_speed", min_speed, 0.01);
     paramNh.param("max_gps_accuracy", max_gps_accuracy, 0.1);
     paramNh.param("debug", publish_debug, false);
-    paramNh.param("antenna_offset_x", antenna_offset_x, 0.0);
-    paramNh.param("antenna_offset_y", antenna_offset_y, 0.0);
-
-    core.setAntennaOffset(antenna_offset_x, antenna_offset_y);
-
-    ROS_INFO_STREAM("Antenna offset: " << antenna_offset_x << ", " << antenna_offset_y);
 
     if(gyro_offset != 0.0 && skip_gyro_calibration) {
         ROS_WARN_STREAM("Using gyro offset of: " << gyro_offset);

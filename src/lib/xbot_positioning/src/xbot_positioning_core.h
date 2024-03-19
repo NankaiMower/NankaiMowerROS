@@ -48,21 +48,20 @@ namespace xbot {
             const StateT &getState();
             void setState(double px, double py, double theta, double vx, double vr);
             const Kalman::Covariance<StateT> &getCovariance();
-            void setAntennaOffset(double offset_x, double offset_y);
 
         public:
-            Kalman::ExtendedKalmanFilter<StateT> ekf{};
-            SystemModelT sys{};
-            PositionModelT pm{};
-            OrientationModelT om{};
-            OrientationModelT2 om2{};
-            SpeedModelT sm{};
+            Kalman::ExtendedKalmanFilter<StateT> ekf;
+            SystemModelT sys;
+            PositionModelT pm;
+            OrientationModelT om;
+            OrientationModelT2 om2;
+            SpeedModelT sm;
 
-            ControlT u{};
-            PositionMeasurementT pos_m{};
-            OrientationMeasurementT orient_m{};
-            OrientationMeasurementT2 orient_m2{};
-            SpeedMeasurementT speed_m{};
+            ControlT u;
+            PositionMeasurementT pos_m;
+            OrientationMeasurementT orient_m;
+            OrientationMeasurementT2 orient_m2;
+            SpeedMeasurementT speed_m;
         };
     }
 }

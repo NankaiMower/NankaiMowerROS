@@ -19,7 +19,7 @@
 extern ros::ServiceClient dockingPointClient;
 extern actionlib::SimpleActionClient<mbf_msgs::MoveBaseAction> *mbfClient;
 extern actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *mbfClientExePath;
-extern mower_msgs::Status getStatus();
+extern mower_msgs::Status last_status;
 
 extern void stopMoving();
 extern bool setGPS(bool enabled);
@@ -119,7 +119,6 @@ bool DockingBehavior::dock_straight() {
 
         r.sleep();
 
-        const auto last_status = getStatus();
         auto mbfState = mbfClientExePath->getState();
 
         if(aborted) {
@@ -175,18 +174,6 @@ std::string DockingBehavior::state_name() {
 
 Behavior *DockingBehavior::execute() {
 
-    // Check if already docked (e.g. carried to base during emergency) and skip
-    if(getStatus().v_charge > 5.0) {
-        ROS_INFO_STREAM("Already inside docking station, going directly to idle.");
-        stopMoving();
-        return &IdleBehavior::INSTANCE;
-    }
-
-    while(!isGPSGood){
-        ROS_WARN_STREAM("Waiting for good GPS");
-        ros::Duration(1.0).sleep();
-    }
-
     bool approachSuccess = approach_docking_point();
 
     if (!approachSuccess) {
@@ -194,16 +181,13 @@ Behavior *DockingBehavior::execute() {
 
         retryCount++;
         if(retryCount <= config.docking_retry_count) {
-            ROS_ERROR("Retrying docking approach");
-            return &DockingBehavior::INSTANCE;
+            ROS_ERROR("Retrying docking");
+            return &UndockingBehavior::RETRY_INSTANCE;
         }
 
         ROS_ERROR("Giving up on docking");
         return &IdleBehavior::INSTANCE;
     }
-
-    // Reset retryCount
-    reset();
 
     // Disable GPS
     inApproachMode = false;

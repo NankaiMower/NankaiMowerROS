@@ -61,10 +61,6 @@ bool allow_send = false;
 // Current speeds (duty cycle) for the three ESCs
 float speed_l = 0, speed_r = 0, speed_mow = 0;
 
-// Ticks / m and wheel distance for this robot
-double wheel_ticks_per_m = 0.0;
-double wheel_distance_m = 0.0;
-
 // Serial port and buffer for the low level connection
 serial::Serial serial_port;
 uint8_t out_buf[1000];
@@ -86,6 +82,7 @@ sensor_msgs::Imu sensor_imu_msg;
 
 ros::ServiceClient highLevelClient;
 
+#define WHEEL_DISTANCE_M 0.325
 
 bool is_emergency() {
     return emergency_high_level || emergency_low_level;
@@ -165,8 +162,6 @@ void publishStatus() {
     mower_msgs::Status status_msg;
     status_msg.stamp = ros::Time::now();
 
-    // ROS_INFO_STREAM("Status bitmask: " << (int)last_ll_status.status_bitmask);
-
     if (last_ll_status.status_bitmask & 1) {
         // LL OK, fill the message
         status_msg.mower_status = mower_msgs::Status::MOWER_STATUS_OK;
@@ -183,7 +178,7 @@ void publishStatus() {
     status_msg.sound_module_busy = (last_ll_status.status_bitmask & 0b01000000) != 0;
     status_msg.ui_board_available = (last_ll_status.status_bitmask & 0b10000000) != 0;
 
-    // 超声波雷达？
+// 超声波雷达？
     for (uint8_t i = 0; i < 5; i++) {
         status_msg.ultrasonic_ranges[i] = last_ll_status.uss_ranges_m[i];
     }
@@ -221,7 +216,8 @@ void publishStatus() {
     status_pub.publish(status_msg);
 
     xbot_msgs::WheelTick wheel_tick_msg;
-    wheel_tick_msg.wheel_tick_factor = static_cast<unsigned int>(wheel_ticks_per_m);
+    // TODO: set this correctly!
+    wheel_tick_msg.wheel_tick_factor = 0;
     wheel_tick_msg.stamp = status_msg.stamp;
     wheel_tick_msg.wheel_ticks_rl = left_status.state.tacho_absolute;
     wheel_tick_msg.wheel_direction_rl = left_status.state.direction && abs(left_status.state.duty_cycle) > 0;
@@ -238,7 +234,7 @@ void publishActuatorsTimerTask(const ros::TimerEvent &timer_event) {
 
 bool setMowEnabled(mower_msgs::MowerControlSrvRequest &req, mower_msgs::MowerControlSrvResponse &res) {
     if (req.mow_enabled && !is_emergency()) {
-        speed_mow = req.mow_direction ? 1 : -1;
+        speed_mow = 1;
     } else {
         speed_mow = 0;
     }
@@ -287,8 +283,8 @@ void highLevelStatusReceived(const mower_msgs::HighLevelStatus::ConstPtr &msg) {
 void velReceived(const geometry_msgs::Twist::ConstPtr &msg) {
     // TODO: update this to rad/s values and implement xESC speed control
     last_cmd_vel = ros::Time::now();
-    speed_r = msg->linear.x + 0.5*wheel_distance_m*msg->angular.z;
-    speed_l = msg->linear.x - 0.5*wheel_distance_m*msg->angular.z;
+    speed_l = msg->linear.x - 0.5*WHEEL_DISTANCE_M*msg->angular.z;
+    speed_r = msg->linear.x + 0.5*WHEEL_DISTANCE_M*msg->angular.z;
 
     if (speed_l >= 1.0) {
         speed_l = 1.0;
@@ -303,7 +299,7 @@ void velReceived(const geometry_msgs::Twist::ConstPtr &msg) {
 }
 
 void handleLowLevelUIEvent(struct ll_ui_event *ui_event) {
-    ROS_INFO_STREAM("Got UI button with code:" << +ui_event->button_id << " and duration: " << +ui_event->press_duration);
+    ROS_INFO_STREAM("Got UI button with code:" << ui_event->button_id << " and duration: " << ui_event->press_duration);
 
     mower_msgs::HighLevelControlSrv srv;
 
@@ -422,18 +418,6 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    // 如下参数由环境变量 OM_WHEEL_TICKS_PER_M 和 OM_WHEEL_DISTANCE_M 决定
-    // default_environment.sh 具有默认值
-    // 如果不用默认值，应该在 mower_config.sh 中设置
-    paramNh.getParam("wheel_ticks_per_m", wheel_ticks_per_m);
-    paramNh.getParam("wheel_distance_m", wheel_distance_m);
-
-    // Wheel ticks [1/m]: 1600
-    // Wheel distance [m]: 0.325
-    ROS_INFO_STREAM("Wheel ticks [1/m]: " << wheel_ticks_per_m);
-    ROS_INFO_STREAM("Wheel distance [m]: " << wheel_distance_m);
-
-    // 各个电机速度
     speed_l = speed_r = speed_mow = 0;
 
     // 名称来自参数节点 xesc_type

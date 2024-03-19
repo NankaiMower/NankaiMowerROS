@@ -23,8 +23,8 @@ ExternalProject_Add(
         ${EP_NEMATODE}
 
         PREFIX ${EP_NEMATODE}
-        GIT_REPOSITORY https://github.com/ClemensElflein/NemaTode
-        GIT_TAG b9ea99be965167a67c6e238336de15304cdb8002
+        GIT_REPOSITORY https://github.com/ckgt/NemaTode
+        GIT_TAG d061b62bacd201a89494a16702d53014c5b4f6e1
         GIT_SHALLOW OFF
 
         BUILD_ALWAYS OFF
@@ -67,7 +67,7 @@ add_executable(driver_gps_node
         src/driver_gps_node.cpp
         src/ublox_gps_interface.h
         src/ublox_gps_interface.cpp
-        src/ubx_datatypes.h src/gps_interface.h src/gps_interface.cpp src/nmea_gps_interface.cpp src/nmea_gps_interface.h)
+        src/ubx_datatypes.h)
 
 
 add_dependencies(driver_gps_node ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})

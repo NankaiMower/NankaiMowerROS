@@ -20,7 +20,6 @@ find_package(catkin REQUIRED
         grid_map_filters
         grid_map_cv
         rosbag
-        xbot_msgs
         )
 
 ## System dependencies are found with CMake's conventions

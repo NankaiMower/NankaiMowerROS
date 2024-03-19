@@ -1,2 +1,0 @@
-serial_port: "/dev/ttyAMA1"
-baudrate: 921600

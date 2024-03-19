@@ -78,7 +78,6 @@ xbot::positioning::xbot_positioning_core::xbot_positioning_core() {
 //    c.setIdentity();
 //    c *= 0.001;
 //    sys.setCovariance(c);
-    setState(0,0,0,0,0);
 }
 
 void xbot::positioning::xbot_positioning_core::setState(double px, double py, double theta, double vx, double vr) {
@@ -93,10 +92,5 @@ void xbot::positioning::xbot_positioning_core::setState(double px, double py, do
     Kalman::Covariance<StateT> c;
     c.setIdentity();
     this->ekf.setCovariance(c);
-}
-
-void xbot::positioning::xbot_positioning_core::setAntennaOffset(double offset_x, double offset_y) {
-    pm.antenna_offset_x = om2.antenna_offset_x = offset_x;
-    pm.antenna_offset_y = om2.antenna_offset_y = offset_y;
 }
 

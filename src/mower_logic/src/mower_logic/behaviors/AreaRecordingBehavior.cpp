@@ -20,6 +20,7 @@ extern ros::ServiceClient dockingPointClient;
 extern ros::ServiceClient emergencyClient;
 extern actionlib::SimpleActionClient<mbf_msgs::MoveBaseAction> *mbfClient;
 extern actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *mbfClientExePath;
+extern mower_msgs::Status last_status;
 extern ros::NodeHandle *n;
 extern void registerActions(std::string prefix, const std::vector<xbot_msgs::ActionInfo> &actions);
 

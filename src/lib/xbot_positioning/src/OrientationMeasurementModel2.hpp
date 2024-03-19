@@ -75,9 +75,10 @@ public:
         M measurement;
         
         // Measurement is given by the actual robot orientation
-        measurement.vx() = x.vx() * std::cos(x.theta()) - (std::sin(x.theta()) * antenna_offset_x * x.vr()) - (std::cos(x.theta()) * antenna_offset_y * x.vr());
-        measurement.vy() = x.vx() * std::sin(x.theta()) + (std::cos(x.theta()) * antenna_offset_x * x.vr()) - (std::sin(x.theta()) * antenna_offset_y * x.vr());
+        measurement.vx() = x.vx() * std::cos(x.theta()) - std::sin(x.theta()) * 0.3 * x.vr();
+        measurement.vy() = x.vx() * std::sin(x.theta()) + std::cos(x.theta()) * 0.3 * x.vr();
 
+        
         return measurement;
     }
 
@@ -85,14 +86,10 @@ public:
         {
             this->H.setZero();
             // partial derivative of meas.vx() w.r.t. x.theta()
-
-            this->H( M::VX, S::THETA ) = -x.vx() * std::sin(x.theta()) - antenna_offset_x * x.vr() * std::cos(x.theta()) + std::sin(x.theta()) *antenna_offset_y *x.vr();
-            this->H( M::VY, S::THETA ) = x.vx() * std::cos(x.theta())  - antenna_offset_x * x.vr() * std::sin(x.theta()) - std::cos(x.theta()) * antenna_offset_y * x.vr();
+            this->H( M::VX, S::THETA ) = -x.vx() * std::sin(x.theta()) - 0.3 * x.vr() * std::cos(x.theta());
+            this->H( M::VY, S::THETA ) = x.vx() * std::cos(x.theta()) - 0.3 * x.vr() * std::sin(x.theta());
         }
 
-
-    double antenna_offset_x = 0;
-    double antenna_offset_y = 0;
 };
 
 } // namespace Robot

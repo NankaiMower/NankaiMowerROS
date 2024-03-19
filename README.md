@@ -19,8 +19,6 @@ docker run \
 
 
 ```
-sudo chmod 666 /dev/ttyAMA0
-
 cd /opt/NankaiMower/
 source devel/setup.bash; source mower_config.sh
 ```
@@ -34,7 +32,6 @@ pip install empy==3.3.4
 ```
 catkin_make -DCATKIN_WHITELIST_PACKAGES="mower_msgs;ntrip_client;;vesc_driver;xesc;xesc_2040_driver;xesc_driver;xesc_interface;xesc_msgs;xbot_msgs;xbot_driver_gps;vesc_driver;mower_comms"
 source devel/setup.bash; source mower_config.sh
-sudo chmod 666 /dev/ttyAMA0
 roslaunch open_mower _comms.launch
 ```
 

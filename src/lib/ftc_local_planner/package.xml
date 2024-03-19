@@ -43,3 +43,5 @@
     <export><mbf_costmap_core plugin="${prefix}/mbf_plugin.xml"/></export>
 
 </package>
+
+

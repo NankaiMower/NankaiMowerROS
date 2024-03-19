@@ -20,19 +20,6 @@
 #include "ros/ros.h"
 #include "mower_logic/MowerLogicConfig.h"
 #include "mower_msgs/HighLevelStatus.h"
-#include <atomic>
-#include <memory>
-
-enum eAutoMode {
-    MANUAL = 0,
-    SEMIAUTO = 1,
-    AUTO = 2
-};
-
-struct sSharedState {
-    bool active_semiautomatic_task;
-};
-
 /**
  * Behavior definition
  */
@@ -42,21 +29,20 @@ private:
     ros::Time startTime;
 
 protected:
-    std::atomic<bool> aborted;
-    std::atomic<bool> paused;
+    bool aborted;
+    bool paused;
 
-    std::atomic<bool> requested_continue_flag;
-    std::atomic<bool> requested_pause_flag;
+    bool requested_continue_flag;
+    bool requested_pause_flag;
 
-    std::atomic<bool> isGPSGood;
-    std::atomic<uint8_t> sub_state;
+    bool isGPSGood;
+    uint8_t sub_state;
 
     double time_in_state() {
         return (ros::Time::now() - startTime).toSec();
     }
 
     mower_logic::MowerLogicConfig config;
-    std::shared_ptr<sSharedState> shared_state;
 
     /**
      * Called ONCE on state enter.
@@ -101,7 +87,7 @@ public:
         requested_pause_flag = false;
     }
 
-    void start(mower_logic::MowerLogicConfig &c, std::shared_ptr<sSharedState> s) {
+    void start(mower_logic::MowerLogicConfig &c) {
         ROS_INFO_STREAM("");
         ROS_INFO_STREAM("");
         ROS_INFO_STREAM("--------------------------------------");
@@ -112,7 +98,6 @@ public:
         requested_continue_flag = false;
         requested_pause_flag = false;
         this->config = c;
-        this->shared_state = std::move(s);
         startTime = ros::Time::now();
         isGPSGood = false;
         sub_state = 0;

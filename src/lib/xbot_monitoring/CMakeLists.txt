@@ -11,9 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
         roscpp
         geometry_msgs
         std_msgs
-        grid_map_core
-        grid_map_ros
-        grid_map_msgs
         )
 
 
@@ -61,9 +58,3 @@ add_executable(xbot_sensor_example
 
 add_dependencies(xbot_sensor_example ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(xbot_sensor_example ${catkin_LIBRARIES})
-add_executable(heatmap_generator
-        src/heatmap_generator.cpp)
-
-
-add_dependencies(heatmap_generator ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
-target_link_libraries(heatmap_generator ${catkin_LIBRARIES})

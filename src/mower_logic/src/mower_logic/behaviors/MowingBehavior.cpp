@@ -17,6 +17,7 @@
 #include "mower_map/GetMowingAreaSrv.h"
 #include "mower_map/SetNavPointSrv.h"
 #include "mower_map/ClearNavPointSrv.h"
+#include <dynamic_reconfigure/server.h>
 #include "MowingBehavior.h"
 
 
@@ -28,8 +29,8 @@ extern ros::ServiceClient clearNavPointClient;
 
 extern actionlib::SimpleActionClient<mbf_msgs::MoveBaseAction> *mbfClient;
 extern actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *mbfClientExePath;
-extern mower_logic::MowerLogicConfig getConfig();
-extern void setConfig(mower_logic::MowerLogicConfig);
+extern mower_logic::MowerLogicConfig last_config;
+extern dynamic_reconfigure::Server<mower_logic::MowerLogicConfig> *reconfigServer;
 
 extern void registerActions(std::string prefix, const std::vector<xbot_msgs::ActionInfo> &actions);
 
@@ -40,10 +41,9 @@ std::string MowingBehavior::state_name() {
 }
 
 Behavior *MowingBehavior::execute() {
-    shared_state->active_semiautomatic_task = true;
 
     while (ros::ok() && !aborted) {
-        if (currentMowingPaths.empty() && !create_mowing_plan(getConfig().current_area)) {
+        if (currentMowingPaths.empty() && !create_mowing_plan(last_config.current_area)) {
             ROS_INFO_STREAM("MowingBehavior: Could not create mowing plan, docking");
             // Start again from first area next time.
             reset();
@@ -57,9 +57,8 @@ Behavior *MowingBehavior::execute() {
         if (finished) {
             // skip to next area if current
             ROS_INFO_STREAM("MowingBehavior: Executing mowing plan - finished");
-            auto config = getConfig();
-            config.current_area++;
-            setConfig(config);
+            last_config.current_area++;
+            reconfigServer->updateConfig(last_config);
         }
     }
 
@@ -73,7 +72,6 @@ Behavior *MowingBehavior::execute() {
 
 void MowingBehavior::enter() {
     skip_area = false;
-    skip_path = false;
     paused = aborted = false;
 
     for(auto& a : actions) {
@@ -91,20 +89,8 @@ void MowingBehavior::exit() {
 
 void MowingBehavior::reset() {
     currentMowingPaths.clear();
-    auto config = getConfig();
-    config.current_area = 0;
-
-    if (config.automatic_mode == eAutoMode::SEMIAUTO) {
-        ROS_INFO_STREAM("MowingBehavior: Finished semiautomatic task");
-        shared_state->active_semiautomatic_task = false;
-    }
-
-    // increment mowing angle offset and return into the <-180, 180> range
-    config.mow_angle_offset = std::fmod(config.mow_angle_offset + config.mow_angle_increment + 180, 360);
-    if (config.mow_angle_offset < 0) config.mow_angle_offset += 360;
-    config.mow_angle_offset -= 180;
-
-    setConfig(config);
+    last_config.current_area = 0;
+    reconfigServer->updateConfig(last_config);
 }
 
 bool MowingBehavior::needs_gps() {
@@ -157,21 +143,11 @@ bool MowingBehavior::create_mowing_plan(int area_index) {
         }
     }
 
-    // handling mowing angle offset
-    ROS_INFO_STREAM("MowingBehavior: mowing angle offset: " << (config.mow_angle_offset * (M_PI / 180.0)));
-    if (config.mow_angle_offset_is_absolute) {
-        angle = config.mow_angle_offset * (M_PI / 180.0);
-        ROS_INFO_STREAM("MowingBehavior: Custom mowing angle: " << angle);
-    } else {
-        angle = angle + config.mow_angle_offset * (M_PI / 180.0);
-        ROS_INFO_STREAM("MowingBehavior: Auto-detected mowing angle + mowing angle offset: " << angle);
-    }
 
     // calculate coverage
     slic3r_coverage_planner::PlanPath pathSrv;
     pathSrv.request.angle = angle;
     pathSrv.request.outline_count = config.outline_count;
-    pathSrv.request.outline_overlap_count = config.outline_overlap_count;
     pathSrv.request.outline = mapSrv.response.area.area;
     pathSrv.request.holes = mapSrv.response.area.obstacles;
     pathSrv.request.fill_type = slic3r_coverage_planner::PlanPathRequest::FILL_LINEAR;
@@ -254,17 +230,10 @@ bool MowingBehavior::execute_mowing_plan() {
             update_actions();
             mowerEnabled = true;
         }
-    
+
 
         auto &path = currentMowingPaths.front();
         ROS_INFO_STREAM("MowingBehavior: Path segment length: " << path.path.poses.size() << " poses.");
-
-        // Check if path is empty. If so, directly skip it
-        if(path.path.poses.size() == 0) {
-            ROS_INFO_STREAM("MowingBehavior: Skipping empty path.");
-            currentMowingPaths.erase(currentMowingPaths.begin());
-            continue;
-        }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////
         // DRIVE TO THE FIRST POINT OF THE MOW PATH
@@ -275,7 +244,7 @@ bool MowingBehavior::execute_mowing_plan() {
         /////////////////////////////////////////////////////////////////////////////////////////////////////////
         {
             ROS_INFO_STREAM("MowingBehavior: (FIRST POINT)  Moving to path segment starting point");
-            if(path.is_outline && getConfig().add_fake_obstacle) {
+            if(path.is_outline && last_config.add_fake_obstacle) {
                 mower_map::SetNavPointSrv set_nav_point_srv;
                 set_nav_point_srv.request.nav_pose = path.path.poses.front().pose;
                 setNavPointClient.call(set_nav_point_srv);
@@ -285,55 +254,11 @@ bool MowingBehavior::execute_mowing_plan() {
             mbf_msgs::MoveBaseGoal moveBaseGoal;
             moveBaseGoal.target_pose = path.path.poses.front();
             moveBaseGoal.controller = "FTCPlanner";
-            mbfClient->sendGoal(moveBaseGoal);
-            actionlib::SimpleClientGoalState current_status(actionlib::SimpleClientGoalState::PENDING);
-            ros::Rate r(10);
-
-            // wait for path execution to finish
-            while (ros::ok()) {
-                current_status = mbfClient->getState();
-                if (current_status.state_ == actionlib::SimpleClientGoalState::ACTIVE ||
-                    current_status.state_ == actionlib::SimpleClientGoalState::PENDING) {
-                    // path is being executed, everything seems fine.
-                    // check if we should pause or abort mowing
-                    if(skip_area) {
-                        ROS_INFO_STREAM("MowingBehavior: (FIRST POINT) SKIP AREA was requested.");
-                        // remove all paths in current area and return true
-                        mowerEnabled = false;
-                        mbfClientExePath->cancelAllGoals();
-                        currentMowingPaths.clear();
-                        skip_area = false;
-                        return true;
-                    }
-                    if(skip_path) {
-                        currentMowingPaths.erase(currentMowingPaths.begin());
-                        skip_path=false;
-                        return false;
-                    }
-                    if (aborted) {
-                        ROS_INFO_STREAM("MowingBehavior: (FIRST POINT) ABORT was requested - stopping path execution.");
-                        mbfClientExePath->cancelAllGoals();
-                        mowerEnabled = false;
-                        return false;
-                    }
-                    if (requested_pause_flag) {
-                        ROS_INFO_STREAM("MowingBehavior: (FIRST POINT) PAUSE was requested - stopping path execution.");
-                        mbfClientExePath->cancelAllGoals();
-                        mowerEnabled = false;
-                        return false;
-                    }
-                } else {
-                    ROS_INFO_STREAM("MowingBehavior: (FIRST POINT)  Got status " << current_status.state_ << " from MBF/FTCPlanner -> Stopping path execution.");
-                    // we're done, break out of the loop
-                    break;
-                }
-                r.sleep();
-            }
-
+            auto result = mbfClient->sendGoalAndWait(moveBaseGoal);
             first_point_attempt_counter++;
-            if (current_status.state_ != actionlib::SimpleClientGoalState::SUCCEEDED) {
+            if (result.state_ != result.SUCCEEDED) {
                 // we cannot reach the start point
-                ROS_ERROR_STREAM("MowingBehavior: (FIRST POINT) - Could not reach goal (first point). Planner Status was: " << current_status.state_);
+                ROS_ERROR_STREAM("MowingBehavior: (FIRST POINT) - Could not reach goal (first point). Planner Status was: " << result.state_);
                 // we have 3 attempts to get to the start pose of the mowing area
                 if (first_point_attempt_counter < config.max_first_point_attempts)
                 {
@@ -401,30 +326,15 @@ bool MowingBehavior::execute_mowing_plan() {
                     current_status.state_ == actionlib::SimpleClientGoalState::PENDING) {
                     // path is being executed, everything seems fine.
                     // check if we should pause or abort mowing
-                    if(skip_area) {
-                        ROS_INFO_STREAM("MowingBehavior: (MOW) SKIP AREA was requested.");
-                        // remove all paths in current area and return true
-                        mowerEnabled = false;
-                        currentMowingPaths.clear();
-                        skip_area = false;
-                        return true;
-                    }
-                    if(skip_path) {
-                        currentMowingPaths.erase(currentMowingPaths.begin());
-                        skip_path=false;
-                        return false;
-                    }
-                    if (aborted) {
+                    if (aborted || skip_area) {
                         ROS_INFO_STREAM("MowingBehavior: (MOW) ABORT was requested - stopping path execution.");
                         mbfClientExePath->cancelAllGoals();
-                        mowerEnabled = false;
-                        break; // Trim path
+                        break;
                     }
                     if (requested_pause_flag) {
                         ROS_INFO_STREAM("MowingBehavior: (MOW) PAUSE was requested - stopping path execution.");
                         mbfClientExePath->cancelAllGoals();
-                        mowerEnabled = false;
-                        break; // Trim path
+                        break;
                     }
                     // show progress
                     ROS_INFO_STREAM_THROTTLE(5, "MowingBehavior: (MOW) Progress: " << getCurrentMowPathIndex() << "/" << path.path.poses.size());                    
@@ -436,42 +346,48 @@ bool MowingBehavior::execute_mowing_plan() {
                 r.sleep();
             } 
 
-            // Only skip/trim if goal execution began
-            if (current_status.state_ != actionlib::SimpleClientGoalState::PENDING &&
-                current_status.state_ != actionlib::SimpleClientGoalState::RECALLED)
+            if(skip_area) {
+                ROS_INFO_STREAM("MowingBehavior: skip_area = true");
+                // remove all paths in current area and return true
+                mowerEnabled = false;
+                currentMowingPaths.clear();
+                skip_area = false;
+                return true;
+            }
+
+          
+
+            int currentIndex = getCurrentMowPathIndex();
+            ROS_INFO_STREAM(">> MowingBehavior: (MOW) PlannerGetProgress currentIndex = " << currentIndex << " of " << path.path.poses.size());
+            printNavState(current_status.state_);
+            // if we have fully processed the segment or we have encountered an error, drop the path segment
+            /* TODO: we can not trust the SUCCEEDED state because the planner sometimes says suceeded with
+                the currentIndex far from the size of the poses ! (BUG in planner ?)
+                instead we trust only the currentIndex vs. poses.size() */
+            if (currentIndex >= path.path.poses.size() || (path.path.poses.size() - currentIndex) < 5) // fully mowed the path ?
             {
-                int currentIndex = getCurrentMowPathIndex();
-                ROS_INFO_STREAM(">> MowingBehavior: (MOW) PlannerGetProgress currentIndex = " << currentIndex << " of " << path.path.poses.size());
-                printNavState(current_status.state_);
-                // if we have fully processed the segment or we have encountered an error, drop the path segment
-                /* TODO: we can not trust the SUCCEEDED state because the planner sometimes says suceeded with
-                    the currentIndex far from the size of the poses ! (BUG in planner ?)
-                    instead we trust only the currentIndex vs. poses.size() */
-                if (currentIndex >= path.path.poses.size() || (path.path.poses.size() - currentIndex) < 5) // fully mowed the path ?
+                 ROS_INFO_STREAM("MowingBehavior: (MOW) Mow path finished, skipping to next mow path.");
+                 currentMowingPaths.erase(currentMowingPaths.begin());
+                 // continue with next segment
+            }
+            else
+            {
+                // we didnt drive all points in the mow path, so we go into pause mode
+                // TODO: we should figure out the likely reason for our failure to complete the path
+                // if GPS -> PAUSE
+                // if something else -> Recovery Behaviour ?
+                auto &poses = path.path.poses;
+                ROS_INFO_STREAM("MowingBehavior (ErrorCatch): Poses before trim:" << poses.size());
+                if (currentIndex == 0) // currentIndex might be 0 if we never consumed one of the points, we trim at least 1 point
                 {
-                    ROS_INFO_STREAM("MowingBehavior: (MOW) Mow path finished, skipping to next mow path.");
-                    currentMowingPaths.erase(currentMowingPaths.begin());
-                    // continue with next segment
+                    currentIndex = 1;
                 }
-                else
-                {
-                    // we didnt drive all points in the mow path, so we go into pause mode
-                    // TODO: we should figure out the likely reason for our failure to complete the path
-                    // if GPS -> PAUSE
-                    // if something else -> Recovery Behaviour ?
-                    auto &poses = path.path.poses;
-                    ROS_INFO_STREAM("MowingBehavior (ErrorCatch): Poses before trim:" << poses.size());
-                    if (currentIndex == 0) // currentIndex might be 0 if we never consumed one of the points, we trim at least 1 point
-                    {
-                        currentIndex = 1;
-                    }
-                    ROS_INFO_STREAM("MowingBehavior (ErrorCatch): Trimming " << currentIndex << " points.");
-                    poses.erase(poses.begin(), poses.begin() + currentIndex);
-                    ROS_INFO_STREAM("MowingBehavior (ErrorCatch): Poses after trim:" << poses.size());
-                    ROS_INFO_STREAM("MowingBehavior: (MOW) PAUSED due to MBF Error");
-                    this->setPause();
-                    update_actions();
-                }
+                ROS_INFO_STREAM("MowingBehavior (ErrorCatch): Trimming " << currentIndex << " points.");
+                poses.erase(poses.begin(), poses.begin() + currentIndex);
+                ROS_INFO_STREAM("MowingBehavior (ErrorCatch): Poses after trim:" << poses.size());
+                ROS_INFO_STREAM("MowingBehavior: (MOW) PAUSED due to MBF Error");
+                this->setPause();
+                update_actions();
             }
         }
     }
@@ -540,17 +456,11 @@ MowingBehavior::MowingBehavior() {
     skip_area_action.enabled = false;
     skip_area_action.action_name = "Skip Area";
 
-    xbot_msgs::ActionInfo skip_path_action;
-    skip_path_action.action_id = "skip_path";
-    skip_path_action.enabled = false;
-    skip_path_action.action_name = "Skip Path";
-
     actions.clear();
     actions.push_back(pause_action);
     actions.push_back(continue_action);
     actions.push_back(abort_mowing_action);
     actions.push_back(skip_area_action);
-    actions.push_back(skip_path_action);
 }
 
 void MowingBehavior::handle_action(std::string action) {
@@ -572,9 +482,6 @@ void MowingBehavior::handle_action(std::string action) {
     } else if(action == "mower_logic:mowing/skip_area") {
         ROS_INFO_STREAM("got skip_area command");
         skip_area = true;
-    } else if(action == "mower_logic:mowing/skip_path") {
-        ROS_INFO_STREAM("got skip_path command");
-        skip_path = true;
     }
     update_actions();
 }

@@ -18,12 +18,23 @@ export OM_HARDWARE_VERSION="0_13_X"
 
 # Uncomment and set to coordinates near your future docking station, this will be your map origin.
 # There might be a case that you don't need those if you using OM_USE_RELATIVE_POSITION=True
-export OM_DATUM_LAT=48.0
-export OM_DATUM_LONG=11.0
+export OM_DATUM_LAT=38.937928
+export OM_DATUM_LONG=117.357260
 
 # NTRIP Settings
 # Set to False if using external radio plugged into the Ardusimple board.
 export OM_USE_NTRIP=True
+#export OM_NTRIP_HOSTNAME=ntrip.gnsslab.cn
+#export OM_NTRIP_PORT=2101
+#export OM_NTRIP_USER=nankaicv
+#export OM_NTRIP_PASSWORD=nkcvL4B@428
+#export OM_NTRIP_ENDPOINT=DAEJ00KOR0
+#export OM_NTRIP_HOSTNAME=ntrip.gnsslab.cn
+#export OM_NTRIP_PORT=2101
+#export OM_NTRIP_USER=nankaicv
+#export OM_NTRIP_PASSWORD=nkcvL4B@428
+#export OM_NTRIP_ENDPOINT=WHU200CHN0
+
 export OM_NTRIP_HOSTNAME=rtk.huacenav.com
 export OM_NTRIP_PORT=8001
 export OM_NTRIP_USER=cytt3622
@@ -69,10 +80,7 @@ export OM_USE_RELATIVE_POSITION=False
 # GPS protocol. Use UBX for u-blox chipsets and NMEA for everything else
 export OM_GPS_PROTOCOL=UBX
 
-# If you use a different gps board you maybe want to set a different baudrate.
-export OM_GPS_BAUDRATE="921600"
-
-# If you want to use F9R's sensor fusion, set this to true (you will also need to set DATUM_LAT and DATUM_LONG).
+# If you want to use F9R's sensor fusion, set this to true (you will also need to set DATUM_LAT and DATUM_LONG.
 # Consider this option unstable, since I don't have the F9R anymore, so I'm not able to test this.
 # IF YOU DONT KNOW WHAT THIS IS, SET IT TO FALSE
 export OM_USE_F9R_SENSOR_FUSION=False
@@ -90,9 +98,6 @@ export OM_UNDOCK_DISTANCE=2.0
 # How many outlines should the mover drive. It's not recommended to set this below 4.
 export OM_OUTLINE_COUNT=4
 
-# How many outlines should the fill (lanes) overlap
-export OM_OUTLINE_OVERLAP_COUNT=0
-
 # Mowing angle offset -180 deg - +180 deg, 0 = east, -90 = north. If mowing angle offset is not absolute it gets added to the auto detected angle which is set by the first 2 m of recorded outline.
 export OM_MOWING_ANGLE_OFFSET=0
 export OM_MOWING_ANGLE_OFFSET_IS_ABSOLUTE=False
@@ -105,8 +110,10 @@ export OM_MOWING_ANGLE_INCREMENT=0
 export OM_TOOL_WIDTH=0.13
 
 # Voltages for battery to be considered full or empty
-export OM_BATTERY_EMPTY_VOLTAGE=25.0
-export OM_BATTERY_FULL_VOLTAGE=28.5
+export OM_BATTERY_EMPTY_VOLTAGE=10
+#25.0
+export OM_BATTERY_FULL_VOLTAGE=24
+#28.5
 
 # Mower motor temperatures to stop and start mowing
 export OM_MOWING_MOTOR_TEMP_HIGH=80.0
@@ -124,8 +131,10 @@ export OM_ENABLE_MOWER=true
 #  1 - SEMIAUTO - mow the entire map once then wait for manual start atgain
 #  0 - MANUAL - mowing requires manual start (default if unset)
 export OM_AUTOMATIC_MODE=0
-
+export OM_AUTOMATIC_START=false
 export OM_OUTLINE_OFFSET=0.05
+
+export OM_max_position_accuracy=5.00
 
 ################################
 ##    External MQTT Broker    ##
@@ -138,9 +147,9 @@ export OM_OUTLINE_OFFSET=0.05
 # export OM_MQTT_PORT="1883"
 # export OM_MQTT_USER=""
 # export OM_MQTT_PASSWORD=""
-# export OM_MQTT_TOPIC_PREFIX="openmower"
 
 
 # source the default values for the hardware platform.
 # you only need this line on non-docker installs. in the docker, it will be done automatically.
 source $(rospack find open_mower)/params/hardware_specific/$OM_MOWER/default_environment.sh
+
