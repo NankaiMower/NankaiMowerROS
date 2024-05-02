@@ -1,0 +1,27 @@
+(cl:defpackage xbot_msgs-msg
+  (:use )
+  (:export
+   "<ABSOLUTEPOSE>"
+   "ABSOLUTEPOSE"
+   "<ACTIONINFO>"
+   "ACTIONINFO"
+   "<MAP>"
+   "MAP"
+   "<MAPAREA>"
+   "MAPAREA"
+   "<MAPOVERLAY>"
+   "MAPOVERLAY"
+   "<MAPOVERLAYPOLYGON>"
+   "MAPOVERLAYPOLYGON"
+   "<ROBOTSTATE>"
+   "ROBOTSTATE"
+   "<SENSORDATADOUBLE>"
+   "SENSORDATADOUBLE"
+   "<SENSORDATASTRING>"
+   "SENSORDATASTRING"
+   "<SENSORINFO>"
+   "SENSORINFO"
+   "<WHEELTICK>"
+   "WHEELTICK"
+  ))
+

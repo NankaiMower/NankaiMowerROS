@@ -1,0 +1,8 @@
+prefix=/opt/open_mower_ros/devel
+
+Name: xbot_msgs
+Description: Description of xbot_msgs
+Version: 0.0.0
+Cflags: -I/opt/open_mower_ros/devel/include
+Libs: -L${prefix}/lib 
+Requires: 

@@ -1,0 +1,8 @@
+prefix=/opt/open_mower_ros/install
+
+Name: open_mower
+Description: Description of open_mower
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

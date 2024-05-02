@@ -1,0 +1,2 @@
+lib/ftc_local_planner:lib/ntrip_client:lib/xbot_driver_gps:lib/xbot_monitoring:lib/xbot_msgs:lib/xbot_positioning:lib/xbot_remote:lib/xesc_ros/vesc_driver:lib/xesc_ros/xesc:lib/xesc_ros/xesc_2040_driver:lib/xesc_ros/xesc_driver:lib/xesc_ros/xesc_interface:lib/xesc_ros/xesc_msgs:mower_camera:mower_comms:mower_logic:mower_map:mower_model:mower_msgs:mower_new_imu:mower_simulation:mower_utils:open_mower
+-DCATKIN_DEVEL_PREFIX=/opt/open_mower_ros/devel -DCMAKE_INSTALL_PREFIX=/opt/open_mower_ros/install -G Unix Makefiles

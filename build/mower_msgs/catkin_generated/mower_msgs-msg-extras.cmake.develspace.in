@@ -1,0 +1,2 @@
+set(mower_msgs_MESSAGE_FILES "/opt/open_mower_ros/src/mower_msgs/msg/Status.msg;/opt/open_mower_ros/src/mower_msgs/msg/ImuRaw.msg;/opt/open_mower_ros/src/mower_msgs/msg/ESCStatus.msg;/opt/open_mower_ros/src/mower_msgs/msg/HighLevelStatus.msg")
+set(mower_msgs_SERVICE_FILES "/opt/open_mower_ros/src/mower_msgs/srv/EmergencyStopSrv.srv;/opt/open_mower_ros/src/mower_msgs/srv/GPSControlSrv.srv;/opt/open_mower_ros/src/mower_msgs/srv/MowerControlSrv.srv;/opt/open_mower_ros/src/mower_msgs/srv/HighLevelControlSrv.srv")

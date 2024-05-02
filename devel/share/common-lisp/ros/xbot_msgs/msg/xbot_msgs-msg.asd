@@ -1,0 +1,31 @@
+
+(cl:in-package :asdf)
+
+(defsystem "xbot_msgs-msg"
+  :depends-on (:roslisp-msg-protocol :roslisp-utils :geometry_msgs-msg
+               :std_msgs-msg
+)
+  :components ((:file "_package")
+    (:file "AbsolutePose" :depends-on ("_package_AbsolutePose"))
+    (:file "_package_AbsolutePose" :depends-on ("_package"))
+    (:file "ActionInfo" :depends-on ("_package_ActionInfo"))
+    (:file "_package_ActionInfo" :depends-on ("_package"))
+    (:file "Map" :depends-on ("_package_Map"))
+    (:file "_package_Map" :depends-on ("_package"))
+    (:file "MapArea" :depends-on ("_package_MapArea"))
+    (:file "_package_MapArea" :depends-on ("_package"))
+    (:file "MapOverlay" :depends-on ("_package_MapOverlay"))
+    (:file "_package_MapOverlay" :depends-on ("_package"))
+    (:file "MapOverlayPolygon" :depends-on ("_package_MapOverlayPolygon"))
+    (:file "_package_MapOverlayPolygon" :depends-on ("_package"))
+    (:file "RobotState" :depends-on ("_package_RobotState"))
+    (:file "_package_RobotState" :depends-on ("_package"))
+    (:file "SensorDataDouble" :depends-on ("_package_SensorDataDouble"))
+    (:file "_package_SensorDataDouble" :depends-on ("_package"))
+    (:file "SensorDataString" :depends-on ("_package_SensorDataString"))
+    (:file "_package_SensorDataString" :depends-on ("_package"))
+    (:file "SensorInfo" :depends-on ("_package_SensorInfo"))
+    (:file "_package_SensorInfo" :depends-on ("_package"))
+    (:file "WheelTick" :depends-on ("_package_WheelTick"))
+    (:file "_package_WheelTick" :depends-on ("_package"))
+  ))

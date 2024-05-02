@@ -1,0 +1,8 @@
+prefix=/opt/open_mower_ros/install
+
+Name: xesc_msgs
+Description: Description of xesc_msgs
+Version: 1.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib 
+Requires: std_msgs message_runtime

@@ -1,0 +1,8 @@
+prefix=/opt/open_mower_ros/devel
+
+Name: xbot_remote
+Description: Description of xbot_remote
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

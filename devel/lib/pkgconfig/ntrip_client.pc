@@ -1,0 +1,8 @@
+prefix=/opt/open_mower_ros/devel
+
+Name: ntrip_client
+Description: Description of ntrip_client
+Version: 1.2.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: rospy std_msgs mavros_msgs nmea_msgs

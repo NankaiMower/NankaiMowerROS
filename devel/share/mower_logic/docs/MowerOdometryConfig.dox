@@ -1,0 +1,9 @@
+\subsubsection parameters ROS parameters
+
+Reads and maintains the following parameters on the ROS server
+
+- \b "~imu_offset" : \b [double] Offset for imu rotation min: -180.0, default: 0.0, max: 180.0
+- \b "~gps_antenna_offset" : \b [double] Offset for GPS antenna (only front supported for now) min: 0.0, default: 0.0, max: 1.0
+- \b "~gps_filter_factor" : \b [double] Factor for GPS complimentary filter. 0 = dont use GPS, 1 = always overwrite pos with GPS min: 0.0, default: 0.01, max: 1.0
+- \b "~simulate_gps_outage" : \b [bool] True to just drop GPS updates min: False, default: False, max: True
+

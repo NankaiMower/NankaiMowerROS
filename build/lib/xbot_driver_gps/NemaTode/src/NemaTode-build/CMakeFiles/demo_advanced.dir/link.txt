@@ -1,0 +1,1 @@
+/usr/bin/c++    -rdynamic CMakeFiles/demo_advanced.dir/demo_advanced.cpp.o  -o demo_advanced  libNemaTode.a 

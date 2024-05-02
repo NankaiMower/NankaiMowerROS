@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /opt/open_mower_ros/devel/setup.sh

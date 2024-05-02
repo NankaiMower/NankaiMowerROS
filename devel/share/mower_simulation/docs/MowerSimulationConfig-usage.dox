@@ -1,0 +1,13 @@
+\subsubsection usage Usage
+\verbatim
+<node name="mower_simulation" pkg="mower_simulation" type="mower_simulation">
+  <param name="battery_voltage" type="double" value="28.0" />
+  <param name="temperature_mower" type="double" value="40.0" />
+  <param name="is_charging" type="bool" value="False" />
+  <param name="mower_error" type="bool" value="False" />
+  <param name="mower_running" type="bool" value="False" />
+  <param name="wheels_stalled" type="bool" value="False" />
+  <param name="emergency_stop" type="bool" value="False" />
+</node>
+\endverbatim
+

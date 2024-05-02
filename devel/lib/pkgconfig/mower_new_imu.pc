@@ -1,0 +1,8 @@
+prefix=/opt/open_mower_ros/devel
+
+Name: mower_new_imu
+Description: Description of mower_new_imu
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

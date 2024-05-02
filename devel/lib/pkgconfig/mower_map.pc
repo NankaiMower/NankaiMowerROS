@@ -1,0 +1,8 @@
+prefix=/opt/open_mower_ros/devel
+
+Name: mower_map
+Description: Description of mower_map
+Version: 0.0.0
+Cflags: -I/opt/open_mower_ros/devel/include
+Libs: -L${prefix}/lib 
+Requires: 

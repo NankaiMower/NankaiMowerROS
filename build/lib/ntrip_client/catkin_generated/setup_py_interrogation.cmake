@@ -1,0 +1,7 @@
+set(ntrip_client_SETUP_PY_SETUP_MODULE "distutils.core")
+set(ntrip_client_SETUP_PY_VERSION "1.2.0")
+set(ntrip_client_SETUP_PY_SCRIPTS "")
+set(ntrip_client_SETUP_PY_PACKAGES "ntrip_client")
+set(ntrip_client_SETUP_PY_PACKAGE_DIRS "src/ntrip_client")
+set(ntrip_client_SETUP_PY_MODULES "")
+set(ntrip_client_SETUP_PY_MODULE_DIRS "")

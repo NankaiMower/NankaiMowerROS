@@ -1,0 +1,8 @@
+prefix=/opt/open_mower_ros/install
+
+Name: xesc_interface
+Description: Description of xesc_interface
+Version: 1.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib 
+Requires: 

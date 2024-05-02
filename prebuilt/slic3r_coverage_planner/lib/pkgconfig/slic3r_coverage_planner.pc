@@ -1,0 +1,8 @@
+prefix=/opt/prebuilt/slic3r_coverage_planner
+
+Name: slic3r_coverage_planner
+Description: Description of slic3r_coverage_planner
+Version: 0.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib 
+Requires: message_runtime

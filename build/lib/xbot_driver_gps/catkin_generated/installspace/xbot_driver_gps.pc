@@ -1,0 +1,8 @@
+prefix=/opt/open_mower_ros/install
+
+Name: xbot_driver_gps
+Description: Description of xbot_driver_gps
+Version: 0.0.0
+Cflags: -I/usr/include
+Libs: -L${prefix}/lib /usr/lib/aarch64-linux-gnu/libGeographic.so
+Requires: 

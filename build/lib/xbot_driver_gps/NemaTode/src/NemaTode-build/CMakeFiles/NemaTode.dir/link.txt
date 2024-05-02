@@ -1,0 +1,2 @@
+/usr/bin/ar qc libNemaTode.a  CMakeFiles/NemaTode.dir/src/GPSFix.cpp.o CMakeFiles/NemaTode.dir/src/GPSService.cpp.o CMakeFiles/NemaTode.dir/src/NMEACommand.cpp.o CMakeFiles/NemaTode.dir/src/NMEAParser.cpp.o CMakeFiles/NemaTode.dir/src/NumberConversion.cpp.o
+/usr/bin/ranlib libNemaTode.a

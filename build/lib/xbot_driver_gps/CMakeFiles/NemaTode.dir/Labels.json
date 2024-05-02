@@ -1,0 +1,43 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/opt/open_mower_ros/build/lib/xbot_driver_gps/CMakeFiles/NemaTode"
+		},
+		{
+			"file" : "/opt/open_mower_ros/build/lib/xbot_driver_gps/CMakeFiles/NemaTode.rule"
+		},
+		{
+			"file" : "/opt/open_mower_ros/build/lib/xbot_driver_gps/CMakeFiles/NemaTode-complete.rule"
+		},
+		{
+			"file" : "/opt/open_mower_ros/build/lib/xbot_driver_gps/NemaTode/src/NemaTode-stamp/NemaTode-install.rule"
+		},
+		{
+			"file" : "/opt/open_mower_ros/build/lib/xbot_driver_gps/NemaTode/src/NemaTode-stamp/NemaTode-mkdir.rule"
+		},
+		{
+			"file" : "/opt/open_mower_ros/build/lib/xbot_driver_gps/NemaTode/src/NemaTode-stamp/NemaTode-download.rule"
+		},
+		{
+			"file" : "/opt/open_mower_ros/build/lib/xbot_driver_gps/NemaTode/src/NemaTode-stamp/NemaTode-update.rule"
+		},
+		{
+			"file" : "/opt/open_mower_ros/build/lib/xbot_driver_gps/NemaTode/src/NemaTode-stamp/NemaTode-patch.rule"
+		},
+		{
+			"file" : "/opt/open_mower_ros/build/lib/xbot_driver_gps/NemaTode/src/NemaTode-stamp/NemaTode-configure.rule"
+		},
+		{
+			"file" : "/opt/open_mower_ros/build/lib/xbot_driver_gps/NemaTode/src/NemaTode-stamp/NemaTode-build.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"NemaTode"
+		],
+		"name" : "NemaTode"
+	}
+}

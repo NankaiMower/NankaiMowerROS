@@ -1,0 +1,32 @@
+\subsubsection parameters ROS parameters
+
+Reads and maintains the following parameters on the ROS server
+
+- \b "~speed_fast" : \b [double] The max speed with which the control point is moved along the path if the straight distance is larger than speed_fast_threshold min: 0.0, default: 0.5, max: 2.0
+- \b "~speed_fast_threshold" : \b [double] Min straight distance in front of the robot for fast speed to be used min: 0.0, default: 1.5, max: 5.0
+- \b "~speed_fast_threshold_angle" : \b [double] Max angle between current pose and pose on path to still count as straight line min: 0.0, default: 5.0, max: 45.0
+- \b "~speed_slow" : \b [double] Slow speed min: 0.0, default: 0.2, max: 2.0
+- \b "~speed_angular" : \b [double] The max angular speed with which the control point is moved along the path min: 1.0, default: 20.0, max: 150.0
+- \b "~acceleration" : \b [double] Acceleration for speed transition min: 0.0, default: 1.0, max: 10.0
+- \b "~kp_lon" : \b [double] KP for speed controller lon min: 0.0, default: 1.0, max: 50.0
+- \b "~ki_lon" : \b [double] KI for speed controller lon min: 0.0, default: 0.0, max: 1.0
+- \b "~ki_lon_max" : \b [double] KI windup for speed controller lon min: 0.0, default: 10.0, max: 100.0
+- \b "~kd_lon" : \b [double] KD for speed controller lon min: 0.0, default: 0.0, max: 1.0
+- \b "~ki_lat" : \b [double] KI for speed controller lat min: 0.0, default: 0.0, max: 5.0
+- \b "~ki_lat_max" : \b [double] KI windup for speed controller lat min: 0.0, default: 10.0, max: 500.0
+- \b "~kp_lat" : \b [double] KP for speed controller lat min: 0.0, default: 1.0, max: 250.0
+- \b "~kd_lat" : \b [double] KD for speed controller lat min: 0.0, default: 0.0, max: 5.0
+- \b "~kp_ang" : \b [double] KP for angle controller min: 0.0, default: 1.0, max: 50.0
+- \b "~ki_ang" : \b [double] KI for angle controller min: 0.0, default: 0.0, max: 5.0
+- \b "~ki_ang_max" : \b [double] KI windup for speed controller angle min: 0.0, default: 10.0, max: 500.0
+- \b "~kd_ang" : \b [double] KD for angle controller min: 0.0, default: 0.0, max: 5.0
+- \b "~max_cmd_vel_speed" : \b [double] Max speed to send to the controller min: 0.0, default: 2.0, max: 5.0
+- \b "~max_cmd_vel_ang" : \b [double] Max angular speed to send to the controller min: 0.0, default: 2.0, max: 5.0
+- \b "~max_goal_distance_error" : \b [double] Wait for robot to get closer than max_goal_distance_error to the goal before setting goal as finished min: 0.0, default: 1.0, max: 3.0
+- \b "~max_goal_angle_error" : \b [double] Wait for robot to get a better angle than max_goal_angle_error before setting goal as finished min: 0.0, default: 10.0, max: 360.0
+- \b "~goal_timeout" : \b [double] Timeout for max_goal_distance_error and max_goal_angle_error min: 0.0, default: 5.0, max: 100.0
+- \b "~max_follow_distance" : \b [double] Stop controller if robot is further away than max_follow_distance (i.e. crash detection) min: 0.0, default: 1.0, max: 3.0
+- \b "~forward_only" : \b [bool] Only allow forward driving min: False, default: True, max: True
+- \b "~restore_defaults" : \b [bool]  Load default config min: False, default: False, max: True
+- \b "~debug_pid" : \b [bool]  Emit debug_pid topic min: False, default: False, max: True
+

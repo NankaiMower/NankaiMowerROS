@@ -1,0 +1,8 @@
+prefix=/opt/open_mower_ros/devel
+
+Name: ftc_local_planner
+Description: Description of ftc_local_planner
+Version: 1.0.1
+Cflags: -I/opt/open_mower_ros/devel/include
+Libs: -L${prefix}/lib 
+Requires: message_runtime

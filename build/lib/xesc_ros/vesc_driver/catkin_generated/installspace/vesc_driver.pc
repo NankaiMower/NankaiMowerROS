@@ -1,0 +1,8 @@
+prefix=/opt/open_mower_ros/install
+
+Name: vesc_driver
+Description: Description of vesc_driver
+Version: 1.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib -lvesc_driver
+Requires: pluginlib roscpp std_msgs xesc_msgs serial

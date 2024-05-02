@@ -1,0 +1,8 @@
+prefix=/opt/open_mower_ros/install
+
+Name: xesc_2040_driver
+Description: Description of xesc_2040_driver
+Version: 1.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib -lxesc_2040_driver
+Requires: pluginlib roscpp std_msgs xesc_msgs serial

@@ -1,0 +1,10 @@
+\subsubsection usage Usage
+\verbatim
+<node name="mower_odometry" pkg="mower_logic" type="mower_odometry">
+  <param name="imu_offset" type="double" value="0.0" />
+  <param name="gps_antenna_offset" type="double" value="0.0" />
+  <param name="gps_filter_factor" type="double" value="0.01" />
+  <param name="simulate_gps_outage" type="bool" value="False" />
+</node>
+\endverbatim
+

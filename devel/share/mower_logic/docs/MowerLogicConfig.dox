@@ -1,0 +1,27 @@
+\subsubsection parameters ROS parameters
+
+Reads and maintains the following parameters on the ROS server
+
+- \b "~automatic_start" : \b [bool] True to start mowing automatically. min: False, default: False, max: True
+- \b "~undock_distance" : \b [double] Distance to drive back for undocking min: 0.0, default: 2.0, max: 5.0
+- \b "~docking_distance" : \b [double] Distance to drive forward during docking min: 0.0, default: 2.0, max: 5.0
+- \b "~docking_approach_distance" : \b [double] Distance to approach docking point min: 0.0, default: 1.5, max: 5.0
+- \b "~docking_retry_count" : \b [int] How often should we retry docking min: 1, default: 4, max: 10
+- \b "~outline_count" : \b [int] Outline count to mow before filling min: 0, default: 3, max: 10
+- \b "~outline_offset" : \b [double] Additional outer outline offset, use positive values for safety, negative values to enlarge the area min: -1.0, default: 0.0, max: 1.0
+- \b "~tool_width" : \b [double] Width of the mower min: 0.1, default: 0.14, max: 2.0
+- \b "~enable_mower" : \b [bool] True to enable mow motor min: False, default: False, max: True
+- \b "~manual_pause_mowing" : \b [bool] True to disable mowing automatically min: False, default: False, max: True
+- \b "~current_area" : \b [int] Current Mow Area min: 0, default: 0, max: 99
+- \b "~battery_empty_voltage" : \b [double] Voltage to return to docking station min: 20.0, default: 25.0, max: 32.0
+- \b "~battery_full_voltage" : \b [double] Voltage to start mowing again min: 20.0, default: 29.0, max: 32.0
+- \b "~motor_hot_temperature" : \b [double] Motor temperature to pause mowing min: 20.0, default: 70.0, max: 150.0
+- \b "~motor_cold_temperature" : \b [double] Motor temperature to allow mowing min: 20.0, default: 40.0, max: 150.0
+- \b "~max_position_accuracy" : \b [double] We allow driving as long as our position is better than this value (m) min: 0.01, default: 0.2, max: 1.0
+- \b "~gps_wait_time" : \b [double] Time to wait after good GPS fix min: 0.0, default: 10.0, max: 60.0
+- \b "~gps_timeout" : \b [double] Time to allow driving without valid GPS min: 0.0, default: 10.0, max: 60.0
+- \b "~add_fake_obstacle" : \b [bool] True to add a fake obstacle to hopefully help path approach min: False, default: False, max: True
+- \b "~ignore_gps_errors" : \b [bool] True to ignore gps errors. USE ONLY FOR SIMULATION! min: False, default: False, max: True
+- \b "~max_first_point_attempts" : \b [int] Maximum attempts to reach the first point of the mow path before trimming min: 1, default: 3, max: 10
+- \b "~max_first_point_trim_attempts" : \b [int] After <max_first_point_attempts> we start to trim the path beginning this often min: 1, default: 3, max: 10
+

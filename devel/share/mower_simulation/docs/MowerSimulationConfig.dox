@@ -1,0 +1,12 @@
+\subsubsection parameters ROS parameters
+
+Reads and maintains the following parameters on the ROS server
+
+- \b "~battery_voltage" : \b [double] battery voltage min: 0.0, default: 28.0, max: 32.0
+- \b "~temperature_mower" : \b [double] battery voltage min: 0.0, default: 40.0, max: 100.0
+- \b "~is_charging" : \b [bool] is charging min: False, default: False, max: True
+- \b "~mower_error" : \b [bool] mower error min: False, default: False, max: True
+- \b "~mower_running" : \b [bool] mower running min: False, default: False, max: True
+- \b "~wheels_stalled" : \b [bool] wheels_stalled min: False, default: False, max: True
+- \b "~emergency_stop" : \b [bool] emergency_stop min: False, default: False, max: True
+

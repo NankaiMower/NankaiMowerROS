@@ -1,0 +1,28 @@
+\subsubsection usage Usage
+\verbatim
+<node name="mower_logic" pkg="mower_logic" type="mower_logic">
+  <param name="automatic_start" type="bool" value="False" />
+  <param name="undock_distance" type="double" value="2.0" />
+  <param name="docking_distance" type="double" value="2.0" />
+  <param name="docking_approach_distance" type="double" value="1.5" />
+  <param name="docking_retry_count" type="int" value="4" />
+  <param name="outline_count" type="int" value="3" />
+  <param name="outline_offset" type="double" value="0.0" />
+  <param name="tool_width" type="double" value="0.14" />
+  <param name="enable_mower" type="bool" value="False" />
+  <param name="manual_pause_mowing" type="bool" value="False" />
+  <param name="current_area" type="int" value="0" />
+  <param name="battery_empty_voltage" type="double" value="25.0" />
+  <param name="battery_full_voltage" type="double" value="29.0" />
+  <param name="motor_hot_temperature" type="double" value="70.0" />
+  <param name="motor_cold_temperature" type="double" value="40.0" />
+  <param name="max_position_accuracy" type="double" value="0.2" />
+  <param name="gps_wait_time" type="double" value="10.0" />
+  <param name="gps_timeout" type="double" value="10.0" />
+  <param name="add_fake_obstacle" type="bool" value="False" />
+  <param name="ignore_gps_errors" type="bool" value="False" />
+  <param name="max_first_point_attempts" type="int" value="3" />
+  <param name="max_first_point_trim_attempts" type="int" value="3" />
+</node>
+\endverbatim
+
