@@ -52,6 +52,21 @@ def delete_file():
     # except Exception as e:
     #     return render_template('deletefail.html')
 
+@app.route('/date', methods=['GET', 'POST'])
+def choose_date():
+    return render_template('top.html')
+
+@app.route('/law', methods=['GET', 'POST'])
+def law():
+    return render_template('law.html')
+
+@app.route('/history', methods=['GET', 'POST'])
+def history():
+    return render_template('history.html')
+
+@app.route('/road', methods=['GET', 'POST'])
+def road():
+    return render_template('road.html')
 
 def gen():
     cap = cv2.VideoCapture(0)

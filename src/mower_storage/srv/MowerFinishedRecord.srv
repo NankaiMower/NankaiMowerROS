@@ -1,0 +1,8 @@
+string datetime
+bool is_finished
+float32 completion_percentage
+int64 time_spent
+float32 distance_travelled
+float32[] route
+---
+bool status
