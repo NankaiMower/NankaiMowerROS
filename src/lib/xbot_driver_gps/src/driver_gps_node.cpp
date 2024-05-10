@@ -28,7 +28,7 @@ ros::Publisher xbot_pose_pub;
 ros::Publisher latency_pub1;
 ros::Publisher latency_pub2;
 ros::Publisher latency_pub3;
-ros::Publisher imu_pub;
+// ros::Publisher imu_pub;
 ros::Publisher vrs_nmea_pub;
 
 GpsInterface gpsInterface;
@@ -37,7 +37,7 @@ bool allow_verbose_logging = false;
 xbot_msgs::AbsolutePose pose_result;
 
 std_msgs::UInt32 latency_msg1, latency_msg2, latency_msg3;
-sensor_msgs::Imu imu_msg;
+// sensor_msgs::Imu imu_msg;
 
 ros::Time last_wheel_tick_time(0.0);
 ros::Time last_vrs_feedback(0.0);
@@ -202,19 +202,19 @@ wheel_latency_received(uint32_t wheel_tick_stamp, uint32_t wheel_tick_stamp_ublo
     latency_pub3.publish(latency_msg3);
 }
 
-void
-imu_received(const GpsInterface::ImuState &state) {
-    imu_msg.header.stamp = ros::Time::now();
-    imu_msg.header.frame_id = "gps";
-    imu_msg.header.seq++;
-    imu_msg.angular_velocity.x = state.gx;
-    imu_msg.angular_velocity.y = state.gy;
-    imu_msg.angular_velocity.z = state.gz;
-    imu_msg.linear_acceleration.x = state.ax;
-    imu_msg.linear_acceleration.y = state.ay;
-    imu_msg.linear_acceleration.z = state.az;
-    imu_pub.publish(imu_msg);
-}
+// void
+// imu_received(const GpsInterface::ImuState &state) {
+//     imu_msg.header.stamp = ros::Time::now();
+//     imu_msg.header.frame_id = "gps";
+//     imu_msg.header.seq++;
+//     imu_msg.angular_velocity.x = state.gx;
+//     imu_msg.angular_velocity.y = state.gy;
+//     imu_msg.angular_velocity.z = state.gz;
+//     imu_msg.linear_acceleration.x = state.ax;
+//     imu_msg.linear_acceleration.y = state.ay;
+//     imu_msg.linear_acceleration.z = state.az;
+//     imu_pub.publish(imu_msg);
+// }
 
 int main(int argc, char **argv) {
 
@@ -264,7 +264,7 @@ int main(int argc, char **argv) {
     vrs_nmea_pub = n.advertise<nmea_msgs::Sentence>("/nmea", 10);
     pose_pub = paramNh.advertise<geometry_msgs::PoseWithCovariance>("pose", 10);
     xbot_pose_pub = paramNh.advertise<xbot_msgs::AbsolutePose>("xb_pose", 10);
-    imu_pub = paramNh.advertise<sensor_msgs::Imu>("imu", 10);
+    // imu_pub = paramNh.advertise<sensor_msgs::Imu>("imu", 10);
 
 
     gpsInterface.set_state_callback(gps_state_received);
@@ -275,7 +275,7 @@ int main(int argc, char **argv) {
         latency_pub3 = paramNh.advertise<std_msgs::UInt32>("wheel_tick_round_trip_host", 100);
         gpsInterface.set_wheel_latency_callback(wheel_latency_received);
     }
-    gpsInterface.set_imu_callback(imu_received);
+    // gpsInterface.set_imu_callback(imu_received);
 
     if (!gpsInterface.start()) {
         return 1;
