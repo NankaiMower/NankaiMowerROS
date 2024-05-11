@@ -7,7 +7,7 @@
 #include <sstream>
 #include "tf/transform_datatypes.h"
 
-#define comPort "/dev/ttyAMA0" // 指定与模块通信的串口，可通过该指令查看用的是哪个串口 ls -l /dev/ttyUSB*
+#define comPort "/dev/ttyUSB0" // 指定与模块通信的串口，可通过该指令查看用的是哪个串口 ls -l /dev/ttyUSB*
 
 serial::Serial com; //声明串口对象 
 ros::Publisher imuMsg_pub;

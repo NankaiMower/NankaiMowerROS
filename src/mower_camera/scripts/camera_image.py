@@ -13,7 +13,7 @@ class ImagePublisher:
         self.fixed_frame = 'camera_frame'
 
     def run(self):
-        rate = rospy.Rate(10) 
+        rate = rospy.Rate(2) 
         while not rospy.is_shutdown():
             ret, frame = self.cap.read()
             
