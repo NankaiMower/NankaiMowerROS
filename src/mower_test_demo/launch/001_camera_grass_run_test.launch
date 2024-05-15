@@ -1,0 +1,7 @@
+<launch>
+    <node pkg="mower_camera"    type="camera_image.py"         output="screen" />
+    <node pkg="mower_model"     type="grass_seg.py"            output="screen" />
+    <node pkg="mower_status"    type="obstacle_handle.py"      output="screen" />
+    <node pkg="mower_driver"    type="mower_driver_command.py" output="screen" />
+    <node pkg="mower_test_demo" type="001_simu_run.py"         output="screen" />
+</launch>
