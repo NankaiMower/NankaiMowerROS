@@ -160,7 +160,8 @@ include_directories(
 ## Mark executable scripts (Python etc.) for installation
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
-  scripts/mower_driver.py
+  scripts/mower_driver_command.py
+  scripts/mower_driver_get_status.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
