@@ -6,18 +6,25 @@ from std_srvs.srv import Empty, EmptyResponse
 def start_motor(req):
     right_motor_serial.write(b'start\r\n')
     rospy.sleep(2)
+    rospy.loginfo("start")
     return EmptyResponse()
 
 def speed_up_motor(req):
     right_motor_serial.write(b'speed+\r\n')
+    rospy.sleep(0.1)
+    rospy.loginfo("speed+")
     return EmptyResponse()
 
 def slow_down_motor(req):
     right_motor_serial.write(b'speed-\r\n')
+    rospy.sleep(0.1)
+    rospy.loginfo("speed-")
     return EmptyResponse()
 
 def stop_motor(req):
     right_motor_serial.write(b'stop\r\n')
+    rospy.sleep(0.1)
+    rospy.loginfo("stop")
     return EmptyResponse()
 
 if __name__ == '__main__':

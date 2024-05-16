@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="mower_driver"    type="mower_driver_command.py" name="mower_driver_control" output="screen" />
+    <node pkg="mower_driver"    type="driver"                  name="mower_driver"         output="screen" />
+</launch>
