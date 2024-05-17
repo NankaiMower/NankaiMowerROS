@@ -34,6 +34,7 @@
 #include "sensor_msgs/MagneticField.h"
 
 #include <xesc_driver/xesc_driver.h>
+// #include <mower_driver/driver.h>
 #include <xesc_msgs/XescStateStamped.h>
 #include <xbot_msgs/WheelTick.h>
 #include "mower_msgs/HighLevelStatus.h"
@@ -70,9 +71,10 @@ boost::crc_ccitt_type crc;
 
 mower_msgs::HighLevelStatus last_high_level_status;
 
-xesc_driver::XescDriver *mow_xesc_interface;
+// xesc_driver::XescDriver *mow_xesc_interface;
 // xesc_driver::XescDriver *left_xesc_interface;
 xesc_driver::XescDriver *right_xesc_interface;
+// driver::Driver *right_interface;
 
 std::mutex ll_status_mutex;
 struct ll_status last_ll_status = {0};
@@ -106,9 +108,9 @@ void publishActuators() {
         speed_mow = 0;
     }
 
-    if(mow_xesc_interface) {
-        mow_xesc_interface->setDutyCycle(speed_mow);
-    }
+    // if(mow_xesc_interface) {
+    //     mow_xesc_interface->setDutyCycle(speed_mow);
+    // }
     // We need to invert the speed, because the ESC has the same config as the left one, so the motor is running in the "wrong" direction
     // left_xesc_interface->setDutyCycle(speed_l);
     right_xesc_interface->setDutyCycle(-speed_r);
@@ -200,11 +202,11 @@ void publishStatus() {
 
 
     xesc_msgs::XescStateStamped mow_status, right_status; // , left_status;
-    if(mow_xesc_interface) {
-        mow_xesc_interface->getStatus(mow_status);
-    } else {
-        mow_status.state.connection_state = xesc_msgs::XescState::XESC_CONNECTION_STATE_DISCONNECTED;
-    }
+    // if(mow_xesc_interface) {
+    //     mow_xesc_interface->getStatus(mow_status);
+    // } else {
+    //     mow_status.state.connection_state = xesc_msgs::XescState::XESC_CONNECTION_STATE_DISCONNECTED;
+    // }
     // left_xesc_interface->getStatus(left_status);
     right_xesc_interface->getStatus(right_status);
 
@@ -409,14 +411,15 @@ int main(int argc, char **argv) {
 
 
     // Setup XESC interfaces
-    if(mowerParamNh.hasParam("xesc_type")) {
-        mow_xesc_interface = new xesc_driver::XescDriver(n, mowerParamNh);
-    } else {
-        mow_xesc_interface = nullptr;
-    }
+    // if(mowerParamNh.hasParam("xesc_type")) {
+    //     mow_xesc_interface = new xesc_driver::XescDriver(n, mowerParamNh);
+    // } else {
+    //     mow_xesc_interface = nullptr;
+    // }
 
     // left_xesc_interface = new xesc_driver::XescDriver(n, leftParamNh);
     right_xesc_interface = new xesc_driver::XescDriver(n, rightParamNh);
+    // right_interface = new driver::Driver(n, rightParamNh);
 
 
     status_pub = n.advertise<mower_msgs::Status>("mower/status", 1);
@@ -536,18 +539,18 @@ int main(int argc, char **argv) {
 
     spinner.stop();
 
-    if(mow_xesc_interface) {
-        mow_xesc_interface->setDutyCycle(0.0);
-        mow_xesc_interface->stop();
-    }
+    // if(mow_xesc_interface) {
+    //     mow_xesc_interface->setDutyCycle(0.0);
+    //     mow_xesc_interface->stop();
+    // }
     // left_xesc_interface->setDutyCycle(0.0);
     right_xesc_interface->setDutyCycle(0.0);
     // left_xesc_interface->stop();
     right_xesc_interface->stop();
 
-    if(mow_xesc_interface) {
-        delete mow_xesc_interface;
-    }
+    // if(mow_xesc_interface) {
+    //     delete mow_xesc_interface;
+    // }
     // delete left_xesc_interface;
     delete right_xesc_interface;
 

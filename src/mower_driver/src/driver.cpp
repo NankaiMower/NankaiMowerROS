@@ -99,4 +99,6 @@ int main(int argc, char *argv[]) {
     sleep(2); 
     interface->stop();
 
+    delete interface;
+
 }
