@@ -4,11 +4,13 @@
 
 driver::Driver::Driver(ros::NodeHandle& nh, ros::NodeHandle& private_nh) {
     // 初始化服务客户端
-    startClient     = nh.serviceClient<std_srvs::Empty>("/motor/start");
-    speedAddClient  = nh.serviceClient<std_srvs::Empty>("/motor/speed_add");
-    speedSubClient  = nh.serviceClient<std_srvs::Empty>("/motor/speed_sub");
-    stopClient      = nh.serviceClient<std_srvs::Empty>("/motor/stop");
-    // statusClient    = nh.serviceClient<xesc_msgs::XescStateStamped>("/motor/get_status");
+    startClient     = private_nh.serviceClient<std_srvs::Empty>("/motor/start");
+    stopClient      = private_nh.serviceClient<std_srvs::Empty>("/motor/stop");
+    speedAddClient  = private_nh.serviceClient<std_srvs::Empty>("/motor/speed_add");
+    speedSubClient  = private_nh.serviceClient<std_srvs::Empty>("/motor/speed_sub");
+    turnLeftClient  = private_nh.serviceClient<std_srvs::Empty>("/motor/turn_left");
+    turnRightClient = private_nh.serviceClient<std_srvs::Empty>("/motor/turn_right");
+    // statusClient    = private_nh.serviceClient<xesc_msgs::XescStateStamped>("/motor/get_status");
 
     std_srvs::Empty emptySrv;
     startClient.call(emptySrv);
@@ -32,20 +34,6 @@ void driver::Driver::setDutyCycle(float speed) {
         steps = 5;
     }
 
-    // for (int i = 0; i < steps; ++i) {
-    //     std_srvs::SetFloat setFloatSrv;
-    //     setFloatSrv.request.value = (speed > 0) ? 100 : -100;
-    //     if ((speed > 0 && speedAddClient.call(setFloatSrv)) ||
-    //         (speed < 0 && speedSubClient.call(setFloatSrv))) {
-    //         ROS_INFO("Motor speed add/sub service called successfully.");
-    //     } else {
-    //         ROS_ERROR("Failed to call motor speed add/sub service.");
-    //     }
-    // }
-
-    // std_srvs::Empty emptySrv;
-    // stopClient.call(emptySrv);
-
     std_srvs::Empty emptySrv;
 
     stopClient.call(emptySrv);
@@ -56,6 +44,15 @@ void driver::Driver::setDutyCycle(float speed) {
             speedSubClient.call(emptySrv);
         }
     }
+}
+
+void driver::Driver::turnLeft() {
+    std_srvs::Empty emptySrv;
+    turnLeftClient.call(emptySrv);
+}
+void driver::Driver::turnRight() {
+    std_srvs::Empty emptySrv;
+    turnRightClient.call(emptySrv);
 }
 
 void driver::Driver::stop() {
@@ -85,18 +82,21 @@ int main(int argc, char *argv[]) {
     ros::NodeHandle paramNh("~");
     ros::NodeHandle rightParamNh("~/right_driver");
 
-    
-    sleep(5); // 暂停1秒
+    sleep(6);
 
     driver::Driver *interface;
     interface = new driver::Driver(n, rightParamNh);
 
     interface->setDutyCycle(0.1);
-    sleep(3); // 暂停1秒
+    sleep(2); 
     interface->setDutyCycle(0.2);
-    sleep(3); // 暂停1秒
+    sleep(2); 
     interface->setDutyCycle(-0.3);
-    sleep(3); // 暂停1秒
+    sleep(2); 
+    interface->turnLeft();
+    sleep(2); 
+    interface->turnRight();
+    sleep(2); 
     interface->stop();
 
 }

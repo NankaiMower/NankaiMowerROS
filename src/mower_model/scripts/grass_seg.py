@@ -11,9 +11,9 @@ from pretrained_model.grass_segmentaion.deeplab import DeepLabModel
 
 class GrassSegmentationNode:
     def __init__(self):
-        rospy.init_node('grass_segmentation')
-        self.image_sub = rospy.Subscriber("camera/image", Image, self.image_callback)
-        self.image_pub = rospy.Publisher("model/grass_segmentation_result", Image, queue_size=1)
+        rospy.init_node('ai_grass_segment')
+        self.image_sub = rospy.Subscriber("/camera/image_raw", Image, self.image_callback)
+        self.image_pub = rospy.Publisher("/camera/grass_segment_result", Image, queue_size=1)
         self.bridge = CvBridge()
 
         model_path = "./pretrained_model/grass_segmentaion/grassSeg.tar.gz"

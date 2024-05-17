@@ -9,9 +9,9 @@ import numpy as np
 class ObstacleDetectionNode:
     def __init__(self):
         # 初始化ROS节点
-        rospy.init_node('obstacle_handling')
-        self.obstacle_param = rospy.get_param('/obstacle_status', False)
-        self.image_sub = rospy.Subscriber('model/grass_segmentation_result', Image, self.image_callback)
+        rospy.init_node('mower_obscatle_handle')
+        self.obstacle_param = rospy.get_param('/mower_status/have_obscatle', False)
+        self.image_sub = rospy.Subscriber('/camera/grass_segment_result', Image, self.image_callback)
         self.rate = rospy.Rate(10)  # 10Hz
         self.bridge = CvBridge()
 
@@ -34,9 +34,9 @@ class ObstacleDetectionNode:
 
         # 根据草地占比决定是否发布停止消息
         if ratio < 0.5:
-            rospy.set_param('/obstacle_status', False)
+            rospy.set_param('/mower_status/have_obscatle', False)
         else:
-            rospy.set_param('/obstacle_status', True)
+            rospy.set_param('/mower_status/have_obscatle', True)
 
 
     def run(self):

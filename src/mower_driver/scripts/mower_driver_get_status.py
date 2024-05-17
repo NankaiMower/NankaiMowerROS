@@ -12,7 +12,7 @@ def motor_info_publisher():
 
 if __name__ == '__main__':
     # 初始化ROS节点
-    rospy.init_node('/wheel/right_wheel/get_info')
+    rospy.init_node('wheel/right_wheel/get_info')
 
     # 初始化串口通信
     global right_motor_serial

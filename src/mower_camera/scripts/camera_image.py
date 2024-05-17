@@ -6,8 +6,8 @@ from std_msgs.msg import Header
       
 class ImagePublisher:
     def __init__(self):
-        rospy.init_node('camera_publisher', anonymous=False)
-        self.image_pub = rospy.Publisher("camera/image", Image, queue_size=1)
+        rospy.init_node('camera', anonymous=False)
+        self.image_pub = rospy.Publisher("/camera/image_raw", Image, queue_size=1)
         self.bridge = CvBridge()
         self.cap = cv2.VideoCapture(0) 
         self.fixed_frame = 'camera_frame'

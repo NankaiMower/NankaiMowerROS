@@ -9,6 +9,8 @@ namespace driver {
         ~Driver();
 
         void setDutyCycle(float speed);
+        void turnLeft();
+        void turnRight();
         void stop();
         // void getStatus(xesc_msgs::XescStateStamped& status);
 
@@ -16,9 +18,11 @@ namespace driver {
         ros::NodeHandle nh;
         ros::NodeHandle private_nh;
         ros::ServiceClient startClient;
+        ros::ServiceClient stopClient;
         ros::ServiceClient speedAddClient;
         ros::ServiceClient speedSubClient;
-        ros::ServiceClient stopClient;
-        ros::ServiceClient statusClient;
+        ros::ServiceClient turnLeftClient;
+        ros::ServiceClient turnRightClient;
+        // ros::ServiceClient statusClient;
     };
 }
