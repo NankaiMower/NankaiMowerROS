@@ -16,7 +16,7 @@ class GrassSegmentationNode:
         self.image_pub = rospy.Publisher("/camera/grass_segment_result", Image, queue_size=1)
         self.bridge = CvBridge()
 
-        model_path = "./pretrained_model/grass_segmentaion/grassSeg.tar.gz"
+        model_path = "/opt/open_mower_ros/pretrained_model/grass_segmentaion/grassSeg.tar.gz"
         self.seg_model = DeepLabModel(model_path)
 
     def image_callback(self, data):

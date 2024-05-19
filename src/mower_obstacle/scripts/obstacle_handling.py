@@ -26,8 +26,8 @@ class ObstacleDetectionNode:
             rospy.logerr("CvBridge Error: {0}".format(e))
 
         # img: (480, 600)
-        w, h = img.shape
-        img = img[:, h//2:]
+        h, w = img.shape
+        img = img[h//2:, :]
 
         ratio = np.sum(img == 255) / img.size
         rospy.loginfo(f"ratio: {ratio}")
