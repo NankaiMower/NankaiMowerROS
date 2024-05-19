@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
     ros::init(argc,argv,"imu_node");
     ros::NodeHandle nh;
     sensor_imu_pub = nh.advertise<sensor_msgs::Imu>("/imu/data_raw", 1);
-    sensor_mag_pub = nh.advertise<sensor_msgs::MagneticField>("/img/mag", 1);
+    sensor_mag_pub = nh.advertise<sensor_msgs::MagneticField>("/imu/mag", 1);
 
     sensor_mag_msg.header.seq = 0;
     sensor_imu_msg.header.seq = 0;
@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
      * @param compassFilter 磁力计滤波系数[取值0-9],数值越大越平稳但实时性越差
      * @param Cmd_ReportTag 功能订阅标识
      */
-    Cmd_12(5, 255, 0,  0, 2, 60, 1, 3, 5, 0x0026); // 1.设置参数
+    Cmd_12(5, 255, 0,  1, 2, 60, 1, 3, 5, 0x002E); // 1.设置参数
     Cmd_03();//2.唤醒传感器
     Cmd_19();//3.开启数据主动上报
 

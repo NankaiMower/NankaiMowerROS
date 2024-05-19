@@ -802,9 +802,9 @@ static void Cmd_RxUnpack(U8 *buf, U8 DLen)
                 tmpY = (S16)(((S16)buf[L+1]<<8) | buf[L]) * scaleMag; L += 2; Dbp("\tCY: %.3f\r\n", tmpY); // y磁场CY
                 tmpZ = (S16)(((S16)buf[L+1]<<8) | buf[L]) * scaleMag; L += 2; Dbp("\tCZ: %.3f\r\n", tmpZ); // z磁场CZ
                 tmpAbs = sqrt(pow2(tmpX) + pow2(tmpY) + pow2(tmpZ)); Dbp("\tC_abs: %.3f\r\n", tmpAbs); // 3轴合成的绝对值
-                // sensor_mag_msg.magnetic_field.x = tmpX;
-                // sensor_mag_msg.magnetic_field.y = tmpY;
-                // sensor_mag_msg.magnetic_field.z = tmpZ;
+                sensor_mag_msg.magnetic_field.x = tmpX;
+                sensor_mag_msg.magnetic_field.y = tmpY;
+                sensor_mag_msg.magnetic_field.z = tmpZ;
             }
             if ((ctl & 0x0010) != 0)
             {// 温度 气压 高度

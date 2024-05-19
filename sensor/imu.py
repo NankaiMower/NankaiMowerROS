@@ -273,7 +273,7 @@ def read_data():
 
     # 1.发送配置参数
     params = [0] * 11  # 数组
-    isCompassOn = 0  # 1=开启磁场融合姿态 0=关闭磁场融合姿态
+    isCompassOn = 1  # 1=开启磁场融合姿态 0=关闭磁场融合姿态
     barometerFilter = 2 # 气压计的滤波等级[取值0-3]
     Cmd_ReportTag = 0x0FFF  # 功能订阅标识
     params[0] = 0x12
