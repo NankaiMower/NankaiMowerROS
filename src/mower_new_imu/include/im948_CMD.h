@@ -1,11 +1,10 @@
 /******************************************************************************
                         设备与IM948模块之间的串口通信库
-版本: V1.04
+版本: V1.03
 记录: 1、增加 加速计和陀螺仪量程可设置
       2、增加 磁场校准开始命令
       3、增加 设置陀螺仪自动校正标识命令
       4、增加 设置静止节能模式的触发时长
-      5、增加 设置上传圈数和支持数据透传
 *******************************************************************************/
 #ifndef _im948_CMD_h
 #define _im948_CMD_h
@@ -35,7 +34,7 @@ typedef float                  F32;
 #define CmdPacket_Begin  0x49   // 起始码
 #define CmdPacket_End    0x4D   // 结束码
 #define CmdPacketMaxDatSizeRx 73  // 模块发来的   数据包的数据体最大长度
-#define CmdPacketMaxDatSizeTx 31  // 发送给模块的 数据包的数据体最大长度
+#define CmdPacketMaxDatSizeTx 19  // 发送给模块的 数据包的数据体最大长度
 
 
 // ===============================调试信息开关====================================
@@ -56,7 +55,6 @@ typedef float                  F32;
      * @return U8 1=接收到完整数据包, 0未获取到完整数据包
      */
     extern U8 Cmd_GetPkt(U8 byte);
-
     // 当接收到有效数据包，会回调进入到 Cmd_RxUnpack(U8 *buf, U8 DLen) 函数里，用户在该函数里处理数据即可
 
     extern void im948_test(void); // 测试示例 功能是监听调试串口发来的操作指令，然后对模块进行操作，放在循环里即可
@@ -87,7 +85,7 @@ typedef float                  F32;
     extern void Cmd_16(void);// 计步数清零
     extern void Cmd_14(void);// 恢复出厂校准参数
     extern void Cmd_15(void);// 保存当前校准参数为出厂校准参数
-    extern void Cmd_07(void);// 加速计简易校准 模块静止在水平面时，发送该指令并收到回复后等待5秒即可
+    extern void Cmd_07(void);// 加速计简易校准 模块静止在水平面时，发送该指令并收到回复后等待9秒即可
     /**
      * 加速计高精度校准
      * @param flag 若模块未处于校准状态时：
@@ -165,59 +163,7 @@ typedef float                  F32;
      */
     extern void Cmd_33(U8 AccRange, U8 GyroRange);
     extern void Cmd_34(void);// 读取 加速计和陀螺仪量程
-    /**
-      * 设置 陀螺仪自动校正标识
-     *
-     * @param GyroAutoFlag  1=陀螺仪自动校正灵敏度开  0=关
-     */
-    extern void Cmd_35(U8 GyroAutoFlag);
-    extern void Cmd_36(void);// 读取 加速计和陀螺仪量程
-    /**
-      * 设置 静止节能模式的触发时长
-     *
-     * @param EcoTime_10s 该值大于0，则开启自动节能模式(即传感器睡眠后不主动上报，或静止EcoTime_10s个10秒自动进入运动监测模式且暂停主动上报)  0=不启用自动节能
-     */
-    extern void Cmd_37(U8 EcoTime_10s);
-    extern void Cmd_38(void);// 读取 静止节能模式的触发时长
-    /**
-       * 设置 当前高度为指定值
-     *
-     * @param val 要设置的高度值 单位为mm
-     */
-    extern void Cmd_42(S32 val);
-    /**
-       * 设置 自动补偿高度标识
-     *
-     * @param OnOff 0=关闭 1=开启
-     */
-    extern void Cmd_43(U8 OnOff);
-    // 读取 自动补偿高度标识
-    extern void Cmd_44(void);
-    /**
-       * 设置 串口波特率
-     *
-     * @param BaudRate 目标波特率 0=9600 1=115200 2=230400 3=460800
-     */
-    extern void Cmd_47(U8 BaudRate);
-    // 读取 串口波特率
-    extern void Cmd_48(void);
-    // 闪烁几下led指示灯
-    extern void Cmd_49(void);
-    /**
-       * 数据透传
-     *
-     * @param TxBuf 要透传的数据
-     * @param TxLen 字节数 必须小于CmdPacketMaxDatSizeTx
-     */
-    extern void Cmd_50(U8 *TxBuf, U8 TxLen);
-    /**
-       * 设置 是否上传总圈数并清零
-     *
-     * @param isReportCycle 0=传输欧拉角数据, 1=用总圈数代替欧拉角传输 并清零圈数
-     */
-    extern void Cmd_51(U8 isReportCycle);
 
 
 
 #endif
-

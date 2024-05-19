@@ -123,7 +123,7 @@ include
 
 # Declare a C++ library
 add_library(im948_CMD
-  src/im948_CMD.h
+  include/im948_CMD.h
   src/im948_CMD.cpp
 )
 

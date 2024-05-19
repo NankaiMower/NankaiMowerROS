@@ -11,7 +11,8 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <serial/serial.h> 
-# include <sensor_msgs/Imu.h>
+#include <sensor_msgs/Imu.h>
+#include <sensor_msgs/MagneticField.h>
 #include <sstream>
 #include "tf/transform_datatypes.h"
 
@@ -700,6 +701,9 @@ static void Cmd_RxUnpack(U8 *buf, U8 DLen)
     U32 tmpU32;
     F32 tmpX, tmpY, tmpZ, tmpAbs;
 
+    extern sensor_msgs::Imu sensor_imu_msg;
+    extern sensor_msgs::MagneticField sensor_mag_msg;
+
     switch (buf[0])
     {
     case 0x02: // 传感器 已睡眠 回复
@@ -748,9 +752,14 @@ static void Cmd_RxUnpack(U8 *buf, U8 DLen)
         break;
     case 0x11: // 获取订阅的功能数据 回复或主动上报
         {
-            sensor_msgs::Imu imu_data;//要发布的IMU数据
-            imu_data.header.stamp = ros::Time::now();
-            imu_data.header.frame_id = "imu_node";
+
+            sensor_imu_msg.header.stamp = ros::Time::now();
+            sensor_imu_msg.header.seq++;
+            sensor_imu_msg.header.frame_id = "base_link";
+
+            sensor_mag_msg.header.stamp = ros::Time::now();
+            sensor_mag_msg.header.seq++;
+            sensor_mag_msg.header.frame_id = "base_link";
             
             ctl = ((U16)buf[2] << 8) | buf[1];// 字节[2-1] 为功能订阅标识，指示当前订阅了哪些功能
             Dbp("\t subscribe tag: 0x%04X\r\n", ctl);
@@ -763,9 +772,9 @@ static void Cmd_RxUnpack(U8 *buf, U8 DLen)
                 tmpY = (S16)(((S16)buf[L+1]<<8) | buf[L]) * scaleAccel; L += 2; Dbp("\taY: %.3f\r\n", tmpY); // y加速度aY
                 tmpZ = (S16)(((S16)buf[L+1]<<8) | buf[L]) * scaleAccel; L += 2; Dbp("\taZ: %.3f\r\n", tmpZ); // z加速度aZ
                 tmpAbs = sqrt(pow2(tmpX) + pow2(tmpY) + pow2(tmpZ)); Dbp("\ta_abs: %.3f\r\n", tmpAbs); // 3轴合成的绝对值
-                //imu_data.linear_acceleration.x = tmpX;
-                //imu_data.linear_acceleration.y = tmpY;
-                //imu_data.linear_acceleration.z = tmpZ;
+                //sensor_imu_msg.linear_acceleration.x = tmpX;
+                //sensor_imu_msg.linear_acceleration.y = tmpY;
+                //sensor_imu_msg.linear_acceleration.z = tmpZ;
             }
             if ((ctl & 0x0002) != 0)
             {// 加速度xyz 包含了重力 使用时需*scaleAccel m/s
@@ -773,9 +782,9 @@ static void Cmd_RxUnpack(U8 *buf, U8 DLen)
                 tmpY = (S16)(((S16)buf[L+1]<<8) | buf[L]) * scaleAccel; L += 2; Dbp("\tAY: %.3f\r\n", tmpY); // y加速度AY
                 tmpZ = (S16)(((S16)buf[L+1]<<8) | buf[L]) * scaleAccel; L += 2; Dbp("\tAZ: %.3f\r\n", tmpZ); // z加速度AZ
                 tmpAbs = sqrt(pow2(tmpX) + pow2(tmpY) + pow2(tmpZ)); Dbp("\tA_abs: %.3f\r\n", tmpAbs); // 3轴合成的绝对值
-                imu_data.linear_acceleration.x = tmpX;
-                imu_data.linear_acceleration.y = tmpY;
-                imu_data.linear_acceleration.z = tmpZ;
+                sensor_imu_msg.linear_acceleration.x = tmpX;
+                sensor_imu_msg.linear_acceleration.y = tmpY;
+                sensor_imu_msg.linear_acceleration.z = tmpZ;
             }
             if ((ctl & 0x0004) != 0)
             {// 角速度xyz 使用时需*scaleAngleSpeed rad/s
@@ -783,9 +792,9 @@ static void Cmd_RxUnpack(U8 *buf, U8 DLen)
                 tmpY = (S16)(((S16)buf[L+1]<<8) | buf[L]) * scaleAngleSpeed; L += 2; Dbp("\tGY: %.3f\r\n", tmpY); // y角速度GY
                 tmpZ = (S16)(((S16)buf[L+1]<<8) | buf[L]) * scaleAngleSpeed; L += 2; Dbp("\tGZ: %.3f\r\n", tmpZ); // z角速度GZ
                 tmpAbs = sqrt(pow2(tmpX) + pow2(tmpY) + pow2(tmpZ)); Dbp("\tG_abs: %.3f\r\n", tmpAbs); // 3轴合成的绝对值
-                imu_data.angular_velocity.x = tmpX * 0.0174532925; // 单位rad/s
-                imu_data.angular_velocity.y = tmpY * 0.0174532925; // 单位rad/s
-                imu_data.angular_velocity.z = tmpZ * 0.0174532925; // 单位rad/s
+                sensor_imu_msg.angular_velocity.x = tmpX * 0.0174532925; // 单位rad/s
+                sensor_imu_msg.angular_velocity.y = tmpY * 0.0174532925; // 单位rad/s
+                sensor_imu_msg.angular_velocity.z = tmpZ * 0.0174532925; // 单位rad/s
             }
             if ((ctl & 0x0008) != 0)
             {// 磁场xyz 使用时需*scaleMag uT
@@ -793,6 +802,9 @@ static void Cmd_RxUnpack(U8 *buf, U8 DLen)
                 tmpY = (S16)(((S16)buf[L+1]<<8) | buf[L]) * scaleMag; L += 2; Dbp("\tCY: %.3f\r\n", tmpY); // y磁场CY
                 tmpZ = (S16)(((S16)buf[L+1]<<8) | buf[L]) * scaleMag; L += 2; Dbp("\tCZ: %.3f\r\n", tmpZ); // z磁场CZ
                 tmpAbs = sqrt(pow2(tmpX) + pow2(tmpY) + pow2(tmpZ)); Dbp("\tC_abs: %.3f\r\n", tmpAbs); // 3轴合成的绝对值
+                // sensor_mag_msg.magnetic_field.x = tmpX;
+                // sensor_mag_msg.magnetic_field.y = tmpY;
+                // sensor_mag_msg.magnetic_field.z = tmpZ;
             }
             if ((ctl & 0x0010) != 0)
             {// 温度 气压 高度
@@ -812,10 +824,10 @@ static void Cmd_RxUnpack(U8 *buf, U8 DLen)
                 tmpX =   (S16)(((S16)buf[L+1]<<8) | buf[L]) * scaleQuat; L += 2; Dbp("\tx: %.3f\r\n", tmpX); // x
                 tmpY =   (S16)(((S16)buf[L+1]<<8) | buf[L]) * scaleQuat; L += 2; Dbp("\ty: %.3f\r\n", tmpY); // y
                 tmpZ =   (S16)(((S16)buf[L+1]<<8) | buf[L]) * scaleQuat; L += 2; Dbp("\tz: %.3f\r\n", tmpZ); // z
-                imu_data.orientation.x = tmpX;
-                imu_data.orientation.y = tmpY;
-                imu_data.orientation.z = tmpZ;
-                imu_data.orientation.w = tmpAbs;
+                sensor_imu_msg.orientation.x = tmpX;
+                sensor_imu_msg.orientation.y = tmpY;
+                sensor_imu_msg.orientation.z = tmpZ;
+                sensor_imu_msg.orientation.w = tmpAbs;
             }
             if ((ctl & 0x0040) != 0)
             {// 欧拉角xyz 使用时需*scaleAngle
@@ -855,8 +867,11 @@ static void Cmd_RxUnpack(U8 *buf, U8 DLen)
                 Dbp("\t GPIO1  M:%X, N:%X\r\n", (tmpU8>>4)&0x0f, (tmpU8)&0x0f);
             }
 
-            extern ros::Publisher imuMsg_pub;
-            imuMsg_pub.publish(imu_data);//发布topic
+            extern ros::Publisher sensor_imu_pub;
+            extern ros::Publisher sensor_mag_pub;
+
+            sensor_imu_pub.publish(sensor_imu_msg);//发布topic
+            sensor_mag_pub.publish(sensor_mag_msg);//发布topic
         }
         break;
     case 0x12: // 设置参数 回复

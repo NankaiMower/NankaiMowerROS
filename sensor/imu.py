@@ -4,7 +4,7 @@ import numpy as np
 from array import array
 
 # 设置正确的串口参数------------------------
-ser_port = "/dev/ttyAMA0"     #此处需要替换为对应使用的串口号，windows系统写成COMx，若是linux则要根据所用系统进行调整如写成/dev/ttyUSBx或/dev/ttySx
+ser_port = "/dev/ttyUSB0"     #此处需要替换为对应使用的串口号，windows系统写成COMx，若是linux则要根据所用系统进行调整如写成/dev/ttyUSBx或/dev/ttySx
 ser_baudrate = 115200 # 串口波特率
 
 ser_timeout = 2 # 串口操作超时时间
@@ -301,9 +301,9 @@ def read_data():
     # 循环接收数据并处理
     while True:
         data = ser.read(1) # read 1 bytes
-        print(type(data))
-        print(len(data))
-        print(data)
+        # print(type(data))
+        # print(len(data))
+        # print(data)
         if len(data) > 0: # if data is not empty
             Cmd_GetPkt(data[0])
 

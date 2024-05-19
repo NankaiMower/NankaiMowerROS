@@ -3,15 +3,20 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include <serial/serial.h> 
-# include <sensor_msgs/Imu.h>
+#include <sensor_msgs/Imu.h>
+#include <sensor_msgs/MagneticField.h>
 #include <sstream>
 #include "tf/transform_datatypes.h"
 
 #define comPort "/dev/ttyUSB0" // 指定与模块通信的串口，可通过该指令查看用的是哪个串口 ls -l /dev/ttyUSB*
 
 serial::Serial com; //声明串口对象 
-ros::Publisher imuMsg_pub;
 
+ros::Publisher sensor_imu_pub;
+ros::Publisher sensor_mag_pub;
+
+sensor_msgs::Imu sensor_imu_msg;//要发布的IMU数据
+sensor_msgs::MagneticField sensor_mag_msg;//要发布的IMU数据
 
 //------------------------------------------------------------------------------
 // 描述: 串口发送数据给设备
@@ -23,19 +28,17 @@ int UART_Write(const U8 *buf, int Len)
     return com.write(buf, Len); //发送串口数据 
 }
 
-void imuSendCmd_callback(const std_msgs::String::ConstPtr& msg) 
-{ 
-    ROS_INFO_STREAM("Writing to serial port" <<msg->data); 
-    // com.write(msg->data);   //发送串口数据 
-}
-
 int main(int argc, char *argv[])
 {
+
     setlocale(LC_ALL,"");//设置编码, 防止中文乱码
     ros::init(argc,argv,"imu_node");
     ros::NodeHandle nh;
-    ros::Subscriber imuSendCmd_sub = nh.subscribe("imuSendCmd", 1000, imuSendCmd_callback);
-    imuMsg_pub = nh.advertise<sensor_msgs::Imu>("imuData_raw", 20);
+    sensor_imu_pub = nh.advertise<sensor_msgs::Imu>("/imu/data_raw", 1);
+    sensor_mag_pub = nh.advertise<sensor_msgs::MagneticField>("/img/mag", 1);
+
+    sensor_mag_msg.header.seq = 0;
+    sensor_imu_msg.header.seq = 0;
 
     try{//设置串口属性，并打开串口 
         com.setPort(comPort); 
