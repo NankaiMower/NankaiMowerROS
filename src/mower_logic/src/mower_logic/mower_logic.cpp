@@ -62,6 +62,7 @@ actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *mbfClientExePath;
 ros::Publisher cmd_vel_pub, high_level_state_publisher;
 mower_logic::MowerLogicConfig last_config;
 
+geometry_msgs::Twist lastJoyVel;
 
 // store some values for safety checks
 ros::Time pose_time(0.0);
@@ -474,9 +475,25 @@ void actionReceived(const std_msgs::String::ConstPtr &action) {
     }
 }
 
+// void joyVelReceived(const geometry_msgs::Twist::ConstPtr &joy_vel) {
+//     if(currentBehavior && currentBehavior->redirect_joystick()) {
+//         cmd_vel_pub.publish(joy_vel);
+//     }
+// }
+
+
 void joyVelReceived(const geometry_msgs::Twist::ConstPtr &joy_vel) {
     if(currentBehavior && currentBehavior->redirect_joystick()) {
-        cmd_vel_pub.publish(joy_vel);
+        // 检查新的消息是否与上次的消息不同
+        if ((joy_vel->linear.x != lastJoyVel.linear.x) ||
+            (joy_vel->angular.z != lastJoyVel.angular.z)) {
+            
+            // 更新lastJoyVel
+            lastJoyVel = *joy_vel;
+            
+            // 发布消息
+            cmd_vel_pub.publish(lastJoyVel);
+        }
     }
 }
 
@@ -491,6 +508,7 @@ int main(int argc, char **argv) {
     reconfigServer = new dynamic_reconfigure::Server<mower_logic::MowerLogicConfig>(mutex, *paramNh);
     reconfigServer->setCallback(reconfigureCB);
 
+    // FIXME: 处理手柄传送的数据, 一卡一卡的
     cmd_vel_pub = n->advertise<geometry_msgs::Twist>("/logic_vel", 1);
 
     ros::Publisher path_pub;
@@ -538,6 +556,7 @@ int main(int argc, char **argv) {
 
     ros::Subscriber status_sub = n->subscribe("/mower/status", 0, statusReceived, ros::TransportHints().tcpNoDelay(true));
     ros::Subscriber pose_sub = n->subscribe("/xbot_positioning/xb_pose", 0, poseReceived, ros::TransportHints().tcpNoDelay(true));
+    // 手柄传送过来的数据，手柄坐标移动信息就改变
     ros::Subscriber joy_cmd = n->subscribe("/joy_vel", 0, joyVelReceived, ros::TransportHints().tcpNoDelay(true));
     ros::Subscriber action = n->subscribe("xbot/action", 0, actionReceived, ros::TransportHints().tcpNoDelay(true));
 
