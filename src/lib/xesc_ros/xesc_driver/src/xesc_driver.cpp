@@ -1,56 +1,55 @@
 #include "xesc_driver/xesc_driver.h"
+#include "mower_driver/SetDuty.h"
+#include <std_srvs/Empty.h>
 
-xesc_driver::XescDriver::XescDriver(ros::NodeHandle &nh, ros::NodeHandle &private_nh) {
-    ROS_INFO_STREAM("Starting xesc driver");
+driver::Driver::Driver(ros::NodeHandle& nh, ros::NodeHandle& private_nh) {
+    // 初始化服务客户端
+    startClient     = private_nh.serviceClient<std_srvs::Empty>("/motor/start");
+    stopClient      = private_nh.serviceClient<std_srvs::Empty>("/motor/stop");
+    speedAddClient  = private_nh.serviceClient<std_srvs::Empty>("/motor/speed_add");
+    speedSubClient  = private_nh.serviceClient<std_srvs::Empty>("/motor/speed_sub");
+    turnLeftClient  = private_nh.serviceClient<std_srvs::Empty>("/motor/turn_left");
+    turnRightClient = private_nh.serviceClient<std_srvs::Empty>("/motor/turn_right");
+    setDutyClient   = private_nh.serviceClient<mower_driver::SetDuty>("/motor/set_duty");
+    // statusClient    = private_nh.serviceClient<xesc_msgs::XescStateStamped>("/motor/get_status");
 
-    // Check the xesc_type field and create the appropriate driver for it
-    std::string xesc_type;
-    if(!private_nh.getParam("xesc_type", xesc_type)) {
-        ROS_ERROR_STREAM("Error: xesc_type not set.");
-        ros::shutdown();
-        xesc_driver = nullptr;
-        return;
+    std_srvs::Empty emptySrv;
+    startClient.call(emptySrv);
+
+}
+
+driver::Driver::~Driver() {
+    // 析构函数中不需要特别操作
+}
+
+void driver::Driver::setDutyCycle(float speed) {
+    speed = speed * 1000;
+    if (speed > 500) { 
+        speed = 500;
+    }
+    if (speed < -500) { 
+        speed = -500;
     }
 
-    if(xesc_type == "xesc_2040") {
-        xesc_driver = new xesc_2040_driver::Xesc2040Driver(nh, private_nh);
-    } else if(xesc_type == "xesc_mini") {
-        xesc_driver = new vesc_driver::VescDriver(nh, private_nh);
+    mower_driver::SetDuty set_duty_srv;
+    set_duty_srv.request.duty = speed;
+    setDutyClient.call(set_duty_srv);
+}
+
+void driver::Driver::turnLeft() {
+    std_srvs::Empty emptySrv;
+    turnLeftClient.call(emptySrv);
+}
+void driver::Driver::turnRight() {
+    std_srvs::Empty emptySrv;
+    turnRightClient.call(emptySrv);
+}
+
+void driver::Driver::stop() {
+    std_srvs::Empty emptySrv;
+    if (stopClient.call(emptySrv)) {
+        ROS_INFO("Motor stop service called successfully.");
     } else {
-        ROS_ERROR_STREAM("Error: xesc_type invalid. Type was: " << xesc_type);
-        ros::shutdown();
-        xesc_driver = nullptr;
-        return;
-    }
-}
-
-void xesc_driver::XescDriver::getStatus(xesc_msgs::XescStateStamped &state_msg) {
-    if (!xesc_driver)
-        return;
-    xesc_driver->getStatus(state_msg);
-}
-
-void xesc_driver::XescDriver::getStatusBlocking(xesc_msgs::XescStateStamped &state_msg) {
-    if (!xesc_driver)
-        return;
-    xesc_driver->getStatusBlocking(state_msg);
-}
-
-void xesc_driver::XescDriver::stop() {
-    if (!xesc_driver)
-        return;
-    xesc_driver->stop();
-}
-
-void xesc_driver::XescDriver::setDutyCycle(float duty_cycle) {
-    if (!xesc_driver)
-        return;
-    xesc_driver->setDutyCycle(duty_cycle);
-}
-
-xesc_driver::XescDriver::~XescDriver() {
-    if (xesc_driver) {
-        delete xesc_driver;
-        xesc_driver = nullptr;
+        ROS_ERROR("Failed to call motor stop service.");
     }
 }

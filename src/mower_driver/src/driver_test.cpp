@@ -1,34 +1,29 @@
 #include <ros/ros.h>
 
-#include "mower_driver/driver.h"
+#include "driver.h"
 #include <unistd.h>
+
+ros::NodeHandle n;
+ros::NodeHandle paramNh("~");
+ros::NodeHandle rightParamNh("~/right_xesc");
+
+driver::Driver *right_interface;
 
 int main(int argc, char *argv[]) {
 
     ros::init(argc, argv, "mower");
 
-    ros::NodeHandle n;
-    ros::NodeHandle paramNh("~");
-    ros::NodeHandle rightParamNh("~/right_driver");
+    right_interface = new driver::Driver(n, rightParamNh);
 
-    sleep(6);
-
-    driver::Driver *interface;
-    interface = new driver::Driver(n, rightParamNh);
-
-    interface->setDutyCycle(0.1);
+    right_interface->setDutyCycle(0.1);
     sleep(2); 
-    interface->setDutyCycle(0.2);
+    right_interface->setDutyCycle(0.2);
     sleep(2); 
-    interface->setDutyCycle(-0.3);
+    right_interface->setDutyCycle(-0.3);
     sleep(2); 
-    // interface->turnLeft();
-    // sleep(2); 
-    // interface->turnRight();
-    // sleep(2); 
-    interface->stop();
+    right_interface->stop();
 
-    delete interface;
+    delete right_interface;
 
 }
 

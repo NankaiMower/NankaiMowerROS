@@ -39,6 +39,8 @@
 #include <xbot_msgs/WheelTick.h>
 #include "mower_msgs/HighLevelStatus.h"
 
+#include <unistd.h>
+
 ros::Publisher status_pub;
 ros::Publisher wheel_tick_pub;
 
@@ -49,10 +51,9 @@ COBS cobs;
 
 ros::NodeHandle *n;
 ros::NodeHandle *paramNh;
-ros::NodeHandle *leftParamNh;
-ros::NodeHandle *mowerParamNh;
 ros::NodeHandle *rightParamNh;
 
+driver::Driver *right_interface;
 
 // True, if ROS thinks there sould be an emergency
 bool emergency_high_level = false;
@@ -77,7 +78,7 @@ boost::crc_ccitt_type crc;
 
 mower_msgs::HighLevelStatus last_high_level_status;
 
-xesc_driver::XescDriver *mow_xesc_interface;
+// xesc_driver::XescDriver *mow_xesc_interface;
 // xesc_driver::XescDriver *left_xesc_interface;
 // xesc_driver::XescDriver *right_xesc_interface;
 // driver::Driver *right_interface;
@@ -98,35 +99,35 @@ bool is_emergency() {
 
 void publishActuators() {
 // emergency or timeout -> send 0 speeds
-    if (is_emergency()) {
-        speed_l = 0;
-        speed_r = 0;
-        speed_mow = 0;
-    }
+    // if (is_emergency()) {
+    //     speed_l = 0;
+    //     speed_r = 0;
+    //     speed_mow = 0;
+    // }
 
-    bool have_obscatle;
-    ROS_INFO("have_obscatle?");
-    n->getParam("/mower_status/have_obscatle", have_obscatle);
-    if (have_obscatle) {
-        speed_l = 0;
-        speed_r = 0;
-        speed_mow = 0;
-        ROS_INFO("have_obscatle.");
-    } else {
-        ROS_INFO("have_no_obscatle.");
-    }
+    // bool have_obscatle;
+    // ROS_INFO("have_obscatle?");
+    // n->getParam("/mower_status/have_obscatle", have_obscatle);
+    // if (have_obscatle) {
+    //     speed_l = 0;
+    //     speed_r = 0;
+    //     speed_mow = 0;
+    //     ROS_INFO("have_obscatle.");
+    // } else {
+    //     ROS_INFO("have_no_obscatle.");
+    // }
 
 
-    if (ros::Time::now() - last_cmd_vel > ros::Duration(1.0)) {
-        speed_l = 0;
-        speed_r = 0;
+    // if (ros::Time::now() - last_cmd_vel > ros::Duration(1.0)) {
+    //     speed_l = 0;
+    //     speed_r = 0;
 
-    }
-    if (ros::Time::now() - last_cmd_vel > ros::Duration(25.0)) {
-        speed_l = 0;
-        speed_r = 0;
-        speed_mow = 0;
-    }
+    // }
+    // if (ros::Time::now() - last_cmd_vel > ros::Duration(25.0)) {
+    //     speed_l = 0;
+    //     speed_r = 0;
+    //     speed_mow = 0;
+    // }
 
     // if(mow_xesc_interface) {
     //     mow_xesc_interface->setDutyCycle(speed_mow);
@@ -134,7 +135,7 @@ void publishActuators() {
     // We need to invert the speed, because the ESC has the same config as the left one, so the motor is running in the "wrong" direction
     // left_xesc_interface->setDutyCycle(speed_l);
     // right_xesc_interface->setDutyCycle(-speed_r);
-    // right_interface->setDutyCycle(-speed_r);
+    right_interface->setDutyCycle(-speed_r);
 
     struct ll_heartbeat heartbeat = {
             .type = PACKET_ID_LL_HEARTBEAT,
@@ -411,15 +412,18 @@ int main(int argc, char **argv) {
     // sensor_mag_msg.header.seq = 0;
     // sensor_imu_msg.header.seq = 0;
 
+    // n = new ros::NodeHandle();
+    // paramNh = new ros::NodeHandle("~");
+    // leftParamNh = new ros::NodeHandle("~/left_xesc");
+    // mowerParamNh = new ros::NodeHandle("~/mower_xesc");
+    // rightParamNh = new ros::NodeHandle("~/right_xesc");
+
     n = new ros::NodeHandle();
     paramNh = new ros::NodeHandle("~");
-    leftParamNh = new ros::NodeHandle("~/left_xesc");
-    mowerParamNh = new ros::NodeHandle("~/mower_xesc");
-    rightParamNh = new ros::NodeHandle("~/right_xesc");
-
+    rightParamNh = new ros::NodeHandle("~/right_driver");
+    
     highLevelClient = n->serviceClient<mower_msgs::HighLevelControlSrv>(
             "mower_service/high_level_control");
-
 
     std::string ll_serial_port_name;
     if (!paramNh->getParam("ll_serial_port", ll_serial_port_name)) {
@@ -429,9 +433,8 @@ int main(int argc, char **argv) {
 
     speed_l = speed_r = speed_mow = 0;
 
-
     // Setup XESC interfaces
-    // if(mowerParamNh->hasParam("xesc_type")) {
+    // if(mowerParamNh.hasParam("xesc_type")) {
     //     mow_xesc_interface = new xesc_driver::XescDriver(*n, *mowerParamNh);
     // } else {
     //     mow_xesc_interface = nullptr;
@@ -439,8 +442,16 @@ int main(int argc, char **argv) {
 
     // left_xesc_interface = new xesc_driver::XescDriver(*n, *leftParamNh);
     // right_xesc_interface = new xesc_driver::XescDriver(*n, *rightParamNh);
-    // right_interface = new driver::Driver(*n, *rightParamNh);
+    right_interface = new driver::Driver(*n, *rightParamNh);
 
+    // sleep(3); 
+    // right_interface->setDutyCycle(0.1);
+    // sleep(2); 
+    // right_interface->setDutyCycle(0.2);
+    // sleep(2); 
+    // right_interface->setDutyCycle(-0.3);
+    // sleep(2); 
+    // right_interface->stop();
 
     status_pub = n->advertise<mower_msgs::Status>("mower/status", 1);
     wheel_tick_pub = n->advertise<xbot_msgs::WheelTick>("mower/wheel_ticks", 1);
@@ -565,16 +576,16 @@ int main(int argc, char **argv) {
     // }
     // left_xesc_interface->setDutyCycle(0.0);
     // right_xesc_interface->setDutyCycle(0.0);
-    // right_interface->setDutyCycle(0.0);
+    right_interface->setDutyCycle(0.0);
     // left_xesc_interface->stop();
     // right_xesc_interface->stop();
-    // right_interface->stop();
+    right_interface->stop();
 
     // if(mow_xesc_interface) {
     //     delete mow_xesc_interface;
     // }
     // delete left_xesc_interface;
     // delete right_xesc_interface;
-
+    delete right_interface;
     return 0;
 }

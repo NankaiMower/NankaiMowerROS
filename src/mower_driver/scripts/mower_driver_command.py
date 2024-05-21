@@ -14,41 +14,34 @@ def start_motor(req):
 def speed_up_motor(req):
     # left_motor_serial.write(b'speed+\r\n')
     right_motor_serial.write(b'speed+\r\n')
-    rospy.sleep(0.1)
     rospy.loginfo("speed+")
     return EmptyResponse()
 
 def slow_down_motor(req):
     # left_motor_serial.write(b'speed-\r\n')
     right_motor_serial.write(b'speed-\r\n')
-    rospy.sleep(0.1)
     rospy.loginfo("speed-")
     return EmptyResponse()
 
 def stop_motor(req):
     # left_motor_serial.write(b'stop\r\n')
     right_motor_serial.write(b'stop\r\n')
-    rospy.sleep(0.1)
     rospy.loginfo("stop")
     return EmptyResponse()
 
 def turn_left_motor(req):
     # left_motor_serial.write(b'stop\r\n')
-    right_motor_serial.write(b'stop\r\n')
-    rospy.sleep(0.1)
+    # right_motor_serial.write(b'stop\r\n')
     # left_motor_serial.write(b'speed-\r\n')
     right_motor_serial.write(b'speed+\r\n')
-    rospy.sleep(0.1)
     rospy.loginfo("turn left")
     return EmptyResponse()
 
 def turn_right_motor(req):
     # left_motor_serial.write(b'stop\r\n')
-    right_motor_serial.write(b'stop\r\n')
-    rospy.sleep(0.1)
+    # right_motor_serial.write(b'stop\r\n')
     # left_motor_serial.write(b'speed+\r\n')
     right_motor_serial.write(b'speed-\r\n')
-    rospy.sleep(0.1)
     rospy.loginfo("turn right")
     return EmptyResponse()
 
@@ -57,7 +50,6 @@ def set_duty(req):
     data = f'setduty={str(duty)}\r\n'.encode('utf8')
     # left_motor_serial.write(data)
     right_motor_serial.write(data)
-    rospy.sleep(0.1)
     rospy.loginfo("set_duty")
     rospy.loginfo(str(duty))
     return SetDutyResponse()
