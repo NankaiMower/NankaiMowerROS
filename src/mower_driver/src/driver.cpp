@@ -1,6 +1,5 @@
 #include "driver.h"
 #include "mower_driver/SetDuty.h"
-#include <unistd.h>
 
 driver::Driver::Driver(ros::NodeHandle& nh, ros::NodeHandle& private_nh) {
     // 初始化服务客户端
@@ -10,6 +9,7 @@ driver::Driver::Driver(ros::NodeHandle& nh, ros::NodeHandle& private_nh) {
     speedSubClient  = private_nh.serviceClient<std_srvs::Empty>("/motor/speed_sub");
     turnLeftClient  = private_nh.serviceClient<std_srvs::Empty>("/motor/turn_left");
     turnRightClient = private_nh.serviceClient<std_srvs::Empty>("/motor/turn_right");
+    setDutyClient   = private_nh.serviceClient<mower_driver::SetDuty>("/motor/set_duty");
     // statusClient    = private_nh.serviceClient<xesc_msgs::XescStateStamped>("/motor/get_status");
 
     std_srvs::Empty emptySrv;
@@ -22,29 +22,40 @@ driver::Driver::~Driver() {
 }
 
 void driver::Driver::setDutyCycle(float speed) {
-    // 将speed乘以1000
-    speed *= 1000;
-
-    // 根据speed的正负，调用增加或减少速度的服务
-    int steps = static_cast<int>(speed / 100);
-    if (steps < 0) {
-        steps = -steps;
+    speed = speed * 1000;
+    if (speed > 500) { 
+        speed = 500;
     }
-    if (steps > 5) { 
-        steps = 5;
+    if (speed < -500) { 
+        speed = -500;
     }
 
-    std_srvs::Empty emptySrv;
-
-    stopClient.call(emptySrv);
-    for (int i = 0; i < steps; ++i) {
-        if (speed >= 0) {
-            speedAddClient.call(emptySrv);
-        } else {
-            speedSubClient.call(emptySrv);
-        }
-    }
+    mower_driver::SetDuty set_duty_srv;
+    set_duty_srv.request.duty = speed;
+    setDutyClient.call(set_duty_srv);
 }
+
+// void driver::Driver::setDutyCycle(int speed) {
+//     // 根据speed的正负，调用增加或减少速度的服务
+//     int steps = speed / 100;
+//     if (steps < 0) {
+//         steps = -steps;
+//     }
+//     if (steps > 5) { 
+//         steps = 5;
+//     }
+
+//     std_srvs::Empty emptySrv;
+
+//     stopClient.call(emptySrv);
+//     for (int i = 0; i < steps; ++i) {
+//         if (speed >= 0) {
+//             speedAddClient.call(emptySrv);
+//         } else {
+//             speedSubClient.call(emptySrv);
+//         }
+//     }
+// }
 
 void driver::Driver::turnLeft() {
     std_srvs::Empty emptySrv;
@@ -73,32 +84,3 @@ void driver::Driver::stop() {
     //     ROS_ERROR("Failed to call motor status service.");
     // }
 // }
-
-int main(int argc, char *argv[]) {
-
-    ros::init(argc, argv, "mower");
-
-    ros::NodeHandle n;
-    ros::NodeHandle paramNh("~");
-    ros::NodeHandle rightParamNh("~/right_driver");
-
-    sleep(6);
-
-    driver::Driver *interface;
-    interface = new driver::Driver(n, rightParamNh);
-
-    interface->setDutyCycle(0.1);
-    sleep(2); 
-    interface->setDutyCycle(0.2);
-    sleep(2); 
-    interface->setDutyCycle(-0.3);
-    sleep(2); 
-    interface->turnLeft();
-    sleep(2); 
-    interface->turnRight();
-    sleep(2); 
-    interface->stop();
-
-    delete interface;
-
-}

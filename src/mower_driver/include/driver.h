@@ -23,6 +23,7 @@ namespace driver {
         ros::ServiceClient speedSubClient;
         ros::ServiceClient turnLeftClient;
         ros::ServiceClient turnRightClient;
+        ros::ServiceClient setDutyClient;
         // ros::ServiceClient statusClient;
     };
 }

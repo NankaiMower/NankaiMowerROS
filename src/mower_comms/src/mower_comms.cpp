@@ -128,12 +128,13 @@ void publishActuators() {
         speed_mow = 0;
     }
 
-    if(mow_xesc_interface) {
-        mow_xesc_interface->setDutyCycle(speed_mow);
-    }
+    // if(mow_xesc_interface) {
+    //     mow_xesc_interface->setDutyCycle(speed_mow);
+    // }
     // We need to invert the speed, because the ESC has the same config as the left one, so the motor is running in the "wrong" direction
     // left_xesc_interface->setDutyCycle(speed_l);
     // right_xesc_interface->setDutyCycle(-speed_r);
+    // right_interface->setDutyCycle(-speed_r);
 
     struct ll_heartbeat heartbeat = {
             .type = PACKET_ID_LL_HEARTBEAT,
@@ -221,12 +222,12 @@ void publishStatus() {
     status_msg.charge_current = last_ll_status.charging_current;
 
 
-    xesc_msgs::XescStateStamped mow_status, right_status; // , left_status;
-    if(mow_xesc_interface) {
-        mow_xesc_interface->getStatus(mow_status);
-    } else {
-        mow_status.state.connection_state = xesc_msgs::XescState::XESC_CONNECTION_STATE_DISCONNECTED;
-    }
+    xesc_msgs::XescStateStamped mow_status, right_status, left_status;
+    // if(mow_xesc_interface) {
+    //     mow_xesc_interface->getStatus(mow_status);
+    // } else {
+    //     mow_status.state.connection_state = xesc_msgs::XescState::XESC_CONNECTION_STATE_DISCONNECTED;
+    // }
     // left_xesc_interface->getStatus(left_status);
     // right_xesc_interface->getStatus(right_status);
 
@@ -430,11 +431,11 @@ int main(int argc, char **argv) {
 
 
     // Setup XESC interfaces
-    if(mowerParamNh->hasParam("xesc_type")) {
-        mow_xesc_interface = new xesc_driver::XescDriver(*n, *mowerParamNh);
-    } else {
-        mow_xesc_interface = nullptr;
-    }
+    // if(mowerParamNh->hasParam("xesc_type")) {
+    //     mow_xesc_interface = new xesc_driver::XescDriver(*n, *mowerParamNh);
+    // } else {
+    //     mow_xesc_interface = nullptr;
+    // }
 
     // left_xesc_interface = new xesc_driver::XescDriver(*n, *leftParamNh);
     // right_xesc_interface = new xesc_driver::XescDriver(*n, *rightParamNh);
@@ -558,18 +559,20 @@ int main(int argc, char **argv) {
 
     spinner.stop();
 
-    if(mow_xesc_interface) {
-        mow_xesc_interface->setDutyCycle(0.0);
-        mow_xesc_interface->stop();
-    }
+    // if(mow_xesc_interface) {
+    //     mow_xesc_interface->setDutyCycle(0.0);
+    //     mow_xesc_interface->stop();
+    // }
     // left_xesc_interface->setDutyCycle(0.0);
     // right_xesc_interface->setDutyCycle(0.0);
+    // right_interface->setDutyCycle(0.0);
     // left_xesc_interface->stop();
     // right_xesc_interface->stop();
+    // right_interface->stop();
 
-    if(mow_xesc_interface) {
-        delete mow_xesc_interface;
-    }
+    // if(mow_xesc_interface) {
+    //     delete mow_xesc_interface;
+    // }
     // delete left_xesc_interface;
     // delete right_xesc_interface;
 

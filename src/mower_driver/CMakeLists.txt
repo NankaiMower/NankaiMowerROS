@@ -11,8 +11,6 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
-  std_srvs
-  xesc_msgs
   message_generation
 )
 
@@ -57,8 +55,15 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate services in the 'srv' folder
+# add_service_files(
+#   FILES
+#   Service1.srv
+#   Service2.srv
+# )
+
 add_service_files(
-  FILES
+  FILES 
+  Person.srv
   SetDuty.srv
 )
 
@@ -70,10 +75,12 @@ add_service_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+# )
+
+generate_messages(DEPENDENCIES std_msgs)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -123,22 +130,20 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME}
+add_library(mower_driver
+  include/driver.h
   src/driver.cpp
 )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(mower_driver ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(
-  driver
-  src/driver.cpp
-)
+# add_executable(${PROJECT_NAME}_node src/mower_driver_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -151,9 +156,21 @@ add_executable(
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(driver
-  ${catkin_LIBRARIES}
-)
+# target_link_libraries(${PROJECT_NAME}_node
+#   ${catkin_LIBRARIES}
+# )
+
+add_executable(person_server src/person_server.cpp)
+target_link_libraries(person_server ${catkin_LIBRARIES}) 
+add_dependencies(person_server ${PROJECT_NAME}_gencpp)
+
+add_executable(person_client src/person_client.cpp)
+target_link_libraries(person_client ${catkin_LIBRARIES})
+add_dependencies(person_client ${PROJECT_NAME}_gencpp)
+
+add_executable(mower_driver_run src/driver_test.cpp)
+target_link_libraries(mower_driver_run mower_driver ${catkin_LIBRARIES})
+add_dependencies(mower_driver_run ${PROJECT_NAME}_gencpp)
 
 #############
 ## Install ##
@@ -166,9 +183,17 @@ target_link_libraries(driver
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   scripts/mower_driver_command.py
-  scripts/mower_driver_get_status.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
+
+install(TARGETS mower_driver
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+)
+
+install(DIRECTORY include
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
+
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html

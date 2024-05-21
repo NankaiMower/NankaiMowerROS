@@ -1,0 +1,4 @@
+<launch>
+    <node pkg="mower_driver"    type="person_server" name="person_server" output="screen"/>
+    <node pkg="mower_driver"    type="person_client" name="person_client" output="screen"/>
+</launch>

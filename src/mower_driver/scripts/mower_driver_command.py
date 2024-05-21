@@ -1,6 +1,7 @@
 import rospy
 import serial
 from std_srvs.srv import Empty, EmptyResponse
+from mower_driver.srv import SetDuty, SetDutyResponse
 
 # 定义服务回调函数
 def start_motor(req):
@@ -51,6 +52,16 @@ def turn_right_motor(req):
     rospy.loginfo("turn right")
     return EmptyResponse()
 
+def set_duty(req):
+    duty = req.duty
+    data = f'setduty={str(duty)}\r\n'.encode('utf8')
+    # left_motor_serial.write(data)
+    right_motor_serial.write(data)
+    rospy.sleep(0.1)
+    rospy.loginfo("set_duty")
+    rospy.loginfo(str(duty))
+    return SetDutyResponse()
+
 if __name__ == '__main__':
     # 初始化ROS节点
     rospy.init_node('mower_driver_control')
@@ -74,5 +85,12 @@ if __name__ == '__main__':
     turn_left_service = rospy.Service('/motor/turn_left', Empty, turn_left_motor)
     turn_right_service = rospy.Service('/motor/turn_right', Empty, turn_right_motor)
 
+    set_duty_service = rospy.Service('/motor/set_duty', SetDuty, set_duty)
+
     # 阻塞，等待服务调用
     rospy.spin()
+
+# rosservice call /motor/start
+# rosservice call /motor/set_duty 100
+# rosservice call /motor/set_duty -- -300
+# rosservice call /motor/stop
