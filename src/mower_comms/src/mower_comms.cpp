@@ -444,15 +444,6 @@ int main(int argc, char **argv) {
     // right_xesc_interface = new xesc_driver::XescDriver(*n, *rightParamNh);
     right_interface = new driver::Driver(*n, *rightParamNh);
 
-    // sleep(3); 
-    // right_interface->setDutyCycle(0.1);
-    // sleep(2); 
-    // right_interface->setDutyCycle(0.2);
-    // sleep(2); 
-    // right_interface->setDutyCycle(-0.3);
-    // sleep(2); 
-    // right_interface->stop();
-
     status_pub = n->advertise<mower_msgs::Status>("mower/status", 1);
     wheel_tick_pub = n->advertise<xbot_msgs::WheelTick>("mower/wheel_ticks", 1);
 
