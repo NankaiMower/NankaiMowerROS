@@ -111,11 +111,11 @@ generate_messages(DEPENDENCIES std_msgs)
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES mower_driver
-  CATKIN_DEPENDS roscpp rospy std_msgs
-)
+# catkin_package(
+#   INCLUDE_DIRS include
+#   LIBRARIES mower_driver
+#   CATKIN_DEPENDS roscpp rospy std_msgs
+# )
 
 ###########
 ## Build ##
@@ -123,21 +123,21 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-)
+# include_directories(
+#   include
+#   ${catkin_INCLUDE_DIRS}
+# )
 
 ## Declare a C++ library
-add_library(mower_driver
-  include/driver.h
-  src/driver.cpp
-)
+# add_library(mower_driver
+#   include/driver.h
+#   src/driver.cpp
+# )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-add_dependencies(mower_driver ${catkin_EXPORTED_TARGETS})
+# add_dependencies(mower_driver ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
@@ -159,17 +159,17 @@ add_dependencies(mower_driver ${catkin_EXPORTED_TARGETS})
 #   ${catkin_LIBRARIES}
 # )
 
-add_executable(person_server src/person_server.cpp)
-target_link_libraries(person_server ${catkin_LIBRARIES}) 
-add_dependencies(person_server ${PROJECT_NAME}_gencpp)
+# add_executable(person_server src/person_server.cpp)
+# target_link_libraries(person_server ${catkin_LIBRARIES}) 
+# add_dependencies(person_server ${PROJECT_NAME}_gencpp)
 
-add_executable(person_client src/person_client.cpp)
-target_link_libraries(person_client ${catkin_LIBRARIES})
-add_dependencies(person_client ${PROJECT_NAME}_gencpp)
+# add_executable(person_client src/person_client.cpp)
+# target_link_libraries(person_client ${catkin_LIBRARIES})
+# add_dependencies(person_client ${PROJECT_NAME}_gencpp)
 
-add_executable(mower_driver_run src/driver_test.cpp)
-target_link_libraries(mower_driver_run mower_driver ${catkin_LIBRARIES})
-add_dependencies(mower_driver_run ${PROJECT_NAME}_gencpp)
+# add_executable(mower_driver_run src/driver_test.cpp)
+# target_link_libraries(mower_driver_run mower_driver ${catkin_LIBRARIES})
+# add_dependencies(mower_driver_run ${PROJECT_NAME}_gencpp)
 
 #############
 ## Install ##
@@ -185,13 +185,13 @@ catkin_install_python(PROGRAMS
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-install(TARGETS mower_driver
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-)
+# install(TARGETS mower_driver
+#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+# )
 
-install(DIRECTORY include
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-)
+# install(DIRECTORY include
+#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+# )
 
 
 ## Mark executables for installation

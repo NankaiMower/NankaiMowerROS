@@ -238,6 +238,7 @@ bool setMowerEnabled(bool enabled)
 
 
 /// @brief Halt all bot movement
+// FIXME: 
 void stopMoving() {
    // ROS_INFO_STREAM("om_mower_logic: stopMoving() - stopping bot movement");
     geometry_msgs::Twist stop;
@@ -475,27 +476,12 @@ void actionReceived(const std_msgs::String::ConstPtr &action) {
     }
 }
 
-// void joyVelReceived(const geometry_msgs::Twist::ConstPtr &joy_vel) {
-//     if(currentBehavior && currentBehavior->redirect_joystick()) {
-//         cmd_vel_pub.publish(joy_vel);
-//     }
-// }
-
-
 void joyVelReceived(const geometry_msgs::Twist::ConstPtr &joy_vel) {
     if(currentBehavior && currentBehavior->redirect_joystick()) {
-        // 检查新的消息是否与上次的消息不同
-        if ((joy_vel->linear.x != lastJoyVel.linear.x) ||
-            (joy_vel->angular.z != lastJoyVel.angular.z)) {
-            
-            // 更新lastJoyVel
-            lastJoyVel = *joy_vel;
-            
-            // 发布消息
-            cmd_vel_pub.publish(lastJoyVel);
-        }
+        cmd_vel_pub.publish(joy_vel);
     }
 }
+
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "mower_logic");

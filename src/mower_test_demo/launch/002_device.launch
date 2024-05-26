@@ -1,4 +1,4 @@
 <launch>
     <node pkg="mower_driver"    type="mower_driver_command.py" name="mower_driver_command"  output="screen" />
-    <node pkg="xesc_driver"     type="xesc_driver_node"        name="xesc_driver"          output="screen" />
+    <node pkg="xesc_driver"     type="xesc_driver_node"        name="mower"          output="screen" />
 </launch>
