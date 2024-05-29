@@ -18,8 +18,8 @@ export OM_HARDWARE_VERSION="0_13_X"
 
 # Uncomment and set to coordinates near your future docking station, this will be your map origin.
 # There might be a case that you don't need those if you using OM_USE_RELATIVE_POSITION=True
-export OM_DATUM_LAT=48.0
-export OM_DATUM_LONG=110.0
+export OM_DATUM_LAT=38.99033
+export OM_DATUM_LONG=117.3789
 
 # NTRIP Settings
 # Set to False if using external radio plugged into the Ardusimple board.
