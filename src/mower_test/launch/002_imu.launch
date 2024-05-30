@@ -1,0 +1,3 @@
+<launch>
+    <node pkg="mower_imu"    type="imuDo"       name="mower_imu"        output="screen" />
+</launch>
