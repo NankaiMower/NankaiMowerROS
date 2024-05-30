@@ -10,14 +10,13 @@ find_package(catkin REQUIRED COMPONENTS
   serial
         xesc_msgs
         vesc_driver
-        xesc_2040_driver
         xesc_interface
 )
 
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES xesc_driver
-  CATKIN_DEPENDS pluginlib roscpp std_msgs xesc_msgs serial xesc_2040_driver vesc_driver
+  CATKIN_DEPENDS pluginlib roscpp std_msgs xesc_msgs serial vesc_driver
 )
 
 ###########
