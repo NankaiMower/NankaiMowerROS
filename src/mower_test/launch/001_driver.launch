@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="xesc_driver"    type="xesc_driver_node"       name="xesc_driver_node"        output="screen">
+        <rosparam file="/opt/NankaiMowerROS/src/mower_params/hardware_specific/comms_xesc_mini_params.yaml"/>
+    </node>
+</launch>

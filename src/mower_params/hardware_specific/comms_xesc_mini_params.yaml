@@ -1,0 +1,4 @@
+a_driver:
+  xesc_type: "xesc_mini"
+  serial_port: "/dev/ttyAMA4"
+  # serial_port: "/dev/ttyAMA2"
