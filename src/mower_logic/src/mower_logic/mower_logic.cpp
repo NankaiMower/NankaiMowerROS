@@ -346,6 +346,7 @@ void checkSafety(const ros::TimerEvent &timer_event) {
     }
 
     // If the motor controllers error, we enter emergency mode in the hope to save them. They should not error.
+    // TODO: 
     // if (last_status.right_esc_status.status <= mower_msgs::ESCStatus::ESC_STATUS_ERROR || last_status.left_esc_status.status <= mower_msgs::ESCStatus ::ESC_STATUS_ERROR) {
     //     setEmergencyMode(true);
     //     ROS_ERROR_STREAM(
@@ -354,13 +355,6 @@ void checkSafety(const ros::TimerEvent &timer_event) {
     //                                                                            << last_status.right_esc_status);
     //     return;
     // }
-
-//////////////////////////////////////////////////
-    if (last_status.right_esc_status.status <= mower_msgs::ESCStatus::ESC_STATUS_ERROR) {
-        setEmergencyMode(true);
-        return;
-    }
-//////////////////////////////////////////////////
 
     // We need orientation and a positional accuracy less than configured
     bool gpsGoodNow = isGpsGood();

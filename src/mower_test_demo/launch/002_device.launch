@@ -1,4 +1,6 @@
 <launch>
     <node pkg="mower_driver"    type="mower_driver_command.py" name="mower_driver_command"  output="screen" />
-    <node pkg="xesc_driver"     type="xesc_driver_node"        name="mower"          output="screen" />
+    <node pkg="xesc_driver"    type="xesc_driver_node"       name="xesc_driver_node"        output="screen">
+        <rosparam file="/opt/NankaiMowerROS/src/mower_params/comms_xesc_mini_test.yaml"/>
+    </node>
 </launch>

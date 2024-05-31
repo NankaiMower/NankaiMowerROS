@@ -348,6 +348,7 @@ namespace ftc_local_planner {
             viz.pose = tf2::toMsg(current_control_point);
             global_point_pub.publish(viz);
         }
+        // FIXME: Timed out waiting for transform from base_link to map to become available before running costmap, tf error: canTransform: target_frame map does not exist. canTransform: source_frame base_link does not exist.. canTransform returned after 0.100285 timeout was 0.1.
         auto map_to_base = tf_buffer->lookupTransform("base_link", "map", ros::Time(), ros::Duration(1.0));
         tf2::doTransform(current_control_point, local_control_point, map_to_base);
 
