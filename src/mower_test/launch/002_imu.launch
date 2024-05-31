@@ -1,3 +1,6 @@
 <launch>
-    <node pkg="mower_imu"    type="imuDo"       name="mower_imu"        output="screen" />
+    <!-- <node pkg="mower_imu" type="imuDo" name="mower_imu" output="screen" /> -->
+    <node pkg="mower_imu" type="imuDo" name="mower_imu" />  
 </launch>
+
+<!-- 这个文件检查imu的信息是否正常读取 -->

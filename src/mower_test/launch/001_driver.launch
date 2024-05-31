@@ -1,5 +1,7 @@
 <launch>
-    <node pkg="xesc_driver"    type="xesc_driver_node"       name="xesc_driver_node"        output="screen">
-        <rosparam file="/opt/NankaiMowerROS/src/mower_params/hardware_specific/comms_xesc_mini_params.yaml"/>
+    <node pkg="xesc_driver" type="xesc_driver_node" name="xesc_driver_node" output="screen">
+        <rosparam file="/opt/NankaiMowerROS/src/mower_params/comms_xesc_mini_test.yaml"/>
     </node>
 </launch>
+
+<!-- 这个文件配合命令测试单个电机能否通过setduty进行速度控制，以及电机信息，检查电机通信接口收发是否正常 -->

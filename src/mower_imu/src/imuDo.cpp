@@ -99,3 +99,6 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
+// rostopic echo /imu/data_raw
+// rostopic echo /imu/mag

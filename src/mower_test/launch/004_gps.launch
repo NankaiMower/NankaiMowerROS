@@ -1,0 +1,27 @@
+
+<launch>
+    <include file="/opt/NankaiMowerROS/src/mower_test/launch/003_ntrip.launch" />
+    <node pkg="xbot_driver_gps" type="driver_gps_node" name="xbot_driver_gps"
+          output="screen"
+          clear_params="true"
+          respawn="true"
+          respawn_delay="5">
+        <rosparam file="/opt/NankaiMowerROS/src/mower_params/gps/comms_gps_params.yaml"/>
+        <param name="baudrate" value="921600" />
+
+        <!-- 绝对 -->
+        <param name="mode" value="absolute" />
+        <param name="datum_lat" value="48.13724720055111"/>
+        <param name="datum_long" value="11.575605219552623"/>
+        <param name="datum_height" value="0"/>
+
+        <!-- 相对 -->
+        <!-- <param name="mode" value="relative" /> -->
+        
+        <remap from="/rtcm" to="/ntrip_client/rtcm"/>
+        <remap from="~wheel_ticks" to="/mower/wheel_ticks"/>
+
+    </node>
+</launch>
+
+<!-- 这个文件检查GPS是否正确，可选择相对或者绝对位置 -->
