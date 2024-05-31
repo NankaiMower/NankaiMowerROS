@@ -133,12 +133,14 @@ namespace ftc_local_planner {
         last_time = now;
 
         if (is_crashed) {
+            ROS_ERROR_STREAM("[computeVelocityCommands] is_crashed");
             cmd_vel.twist.linear.x = 0;
             cmd_vel.twist.angular.z = 0;
             return RET_COLLISION;
         }
 
         if (current_state == FINISHED) {
+            ROS_ERROR_STREAM("[computeVelocityCommands] FINISHED");
             cmd_vel.twist.linear.x = 0;
             cmd_vel.twist.angular.z = 0;
             return RET_SUCCESS;
@@ -156,13 +158,17 @@ namespace ftc_local_planner {
         }
 
         // Finally, we calculate the velocity commands.
+        ROS_INFO_STREAM("Finally, we calculate the velocity commands.");
         calculate_velocity_commands(dt, cmd_vel);
 
         if (is_crashed) {
+            ROS_ERROR_STREAM("Finally, is_crashed.");
             cmd_vel.twist.linear.x = 0;
             cmd_vel.twist.angular.z = 0;
             return RET_COLLISION;
         }
+
+        ROS_INFO_STREAM("[computeVelocityCommands final] x " << cmd_vel.twist.linear.x << " z " << cmd_vel.twist.angular.z);
 
         return RET_SUCCESS;
     }
@@ -296,7 +302,8 @@ namespace ftc_local_planner {
 
                     if (remaining_distance_to_next_pose < distance_to_move &&
                         remaining_angular_distance_to_next_pose < angle_to_move) {
-                        // we need to move further than the remaining distance_to_move. Skip to the next point and decrease distance_to_move.
+                        // we need to move further than the remaining distance_to_move. 
+                        // Skip to the next point and decrease distance_to_move.
                         current_progress = 0.0;
                         current_index++;
                         distance_to_move -= remaining_distance_to_next_pose;
@@ -343,12 +350,14 @@ namespace ftc_local_planner {
         }
 
         {
+            ROS_INFO_STREAM("index:" << current_index);
             geometry_msgs::PoseStamped viz;
             viz.header = global_plan[current_index].header;
             viz.pose = tf2::toMsg(current_control_point);
             global_point_pub.publish(viz);
         }
         // FIXME: Timed out waiting for transform from base_link to map to become available before running costmap, tf error: canTransform: target_frame map does not exist. canTransform: source_frame base_link does not exist.. canTransform returned after 0.100285 timeout was 0.1.
+        // Costmap2DROS transform timeout. Current time: 1716963658.5845, global_pose stamp: 1716963658.2619, tolerance: 0.3000
         auto map_to_base = tf_buffer->lookupTransform("base_link", "map", ros::Time(), ros::Duration(1.0));
         tf2::doTransform(current_control_point, local_control_point, map_to_base);
 
@@ -360,11 +369,13 @@ namespace ftc_local_planner {
     void FTCPlanner::calculate_velocity_commands(double dt, geometry_msgs::TwistStamped &cmd_vel) {
         // check, if we're completely done
         if (current_state == FINISHED || is_crashed) {
+            ROS_ERROR_STREAM("[calculate_velocity_commands] is_crashed");
             cmd_vel.twist.linear.x = 0;
             cmd_vel.twist.angular.z = 0;
             return;
         }
 
+        ROS_INFO_STREAM("[calculate_velocity_commands] x " << cmd_vel.twist.linear.x << " z " << cmd_vel.twist.angular.z);
 
         i_lon_error += lon_error * dt;
         i_lat_error += lat_error * dt;
@@ -401,6 +412,7 @@ namespace ftc_local_planner {
 
         if (current_state == FOLLOWING) {
             double lin_speed = lon_error * config.kp_lon + i_lon_error * config.ki_lon + d_lon * config.kd_lon;
+            ROS_INFO_STREAM("lin_speed: " << lin_speed);
             if (lin_speed < 0 && config.forward_only) {
                 lin_speed = 0;
             } else {
@@ -414,7 +426,16 @@ namespace ftc_local_planner {
                     lat_error *= -1.0;
                 }
             }
+
+            // TODO:
+            if (current_index > 20){
+                lin_speed =2;
+            }
+
             cmd_vel.twist.linear.x = lin_speed;
+
+            ROS_INFO_STREAM("[calculate_velocity_commands FOLLOWING] x " << cmd_vel.twist.linear.x << " z " << cmd_vel.twist.angular.z);
+
         } else {
             cmd_vel.twist.linear.x = 0.0;
         }
@@ -474,6 +495,9 @@ namespace ftc_local_planner {
             
             pubPid.publish(debugPidMsg);
         }
+
+        ROS_INFO_STREAM("[calculate_velocity_command final] x " << cmd_vel.twist.linear.x << " z " << cmd_vel.twist.angular.z);
+
     }
 
     bool FTCPlanner::getProgress(PlannerGetProgressRequest &req, PlannerGetProgressResponse &res) {

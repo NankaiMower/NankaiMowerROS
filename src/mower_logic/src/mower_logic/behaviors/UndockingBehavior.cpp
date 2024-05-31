@@ -79,7 +79,8 @@ Behavior *UndockingBehavior::execute() {
 
 
     ROS_INFO_STREAM("Undock success. Waiting for GPS.");
-    bool hasGps = waitForGPS();
+    // TODO:
+    bool hasGps = true; // waitForGPS();
 
     if (!hasGps) {
         ROS_ERROR_STREAM("Could not get GPS.");
