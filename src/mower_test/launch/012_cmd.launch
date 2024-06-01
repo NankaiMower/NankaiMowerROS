@@ -1,0 +1,8 @@
+<launch>
+    <node pkg="twist_mux" type="twist_mux" name="twist_mux" output="screen">
+        <remap from="cmd_vel_out" to="/cmd_vel"/>
+        <rosparam file="/opt/NankaiMowerROS/src/mower_params/cmd/twist_mux_topics.yaml"  command="load"/>
+    </node>
+</launch>
+
+<!-- 复用机器控制（导航控制和逻辑控制，逻辑控制的优先级更高） -->

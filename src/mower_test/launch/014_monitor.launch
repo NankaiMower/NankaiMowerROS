@@ -1,0 +1,7 @@
+<launch>
+    <node pkg="xbot_monitoring" type="xbot_monitoring" name="xbot_monitoring" output="screen" respawn="true" respawn_delay="10">
+        <remap from="/xbot_monitoring/remote_cmd_vel" to="/joy_vel"/>
+    </node>
+</launch>
+
+<!-- 监控管理 -->

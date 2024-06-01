@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="mower_logic" type="monitoring" name="monitoring" output="screen" respawn="true" respawn_delay="10"/>
+</launch>
+
+<!-- 状态管理 -->

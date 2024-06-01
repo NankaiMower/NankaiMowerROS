@@ -1,4 +1,0 @@
-<launch>
-    <include file="/opt/NankaiMowerROS/src/mower_test/launch/006_localization.launch" />
-    <include file="/opt/NankaiMowerROS/src/mower_test/launch/007_move_base.launch" />
-</launch>

@@ -341,7 +341,7 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-"""
+/*
 rostopic echo /imu/data_raw
 rostopic echo /mower/wheel_ticks
 rostopic echo /xbot_driver_gps/xb_pose
@@ -353,4 +353,4 @@ rostopic info /mower/wheel_ticks [订阅]
 rostopic info /xbot_driver_gps/xb_pose [订阅]
 rostopic info /xbot_positioning/xb_pose [发布]
 rostopic info /xbot_positioning/odom_out [发布]
-"""
+*/

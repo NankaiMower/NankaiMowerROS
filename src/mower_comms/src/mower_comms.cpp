@@ -581,9 +581,9 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-"""
+/*
 rostopic echo /cmd_vel [订阅]
 rostopic echo /mower/status
 rostopic echo /mower/wheel_ticks
 rostopic echo /mower_logic/current_state [订阅]
-"""
+*/

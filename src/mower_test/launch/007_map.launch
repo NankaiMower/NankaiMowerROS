@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="mower_map" type="mower_map_service" name="map_service" output="screen"/>
+</launch>
+
+<!-- 地图构建相关 -->

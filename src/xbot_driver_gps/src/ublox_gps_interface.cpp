@@ -404,7 +404,7 @@ namespace xbot {
                 gps_state_.position_accuracy = (double) sqrt(
                         pow((double) msg->hAcc / 1000.0, 2) + pow((double) msg->vAcc / 1000.0, 2));;
 
-                """
+                /*
                 具体来说：
                 msg->hAcc 是水平精度，单位是毫米（mm）。
                 msg->vAcc 是垂直精度，单位也是毫米（mm）。
@@ -412,7 +412,7 @@ namespace xbot {
                 同样地，pow((double) msg->vAcc / 1000.0, 2) 将垂直精度也从毫米转换为米，并平方。
                 最后，sqrt(...) 函数计算这两个平方值的和的平方根，得到位置的总精度，单位是米（m）。
                 这段代码计算的是GPS位置的总精度，单位是米。
-                """
+                */
 
                 gps_state_.vel_e = msg->velE / 1000.0;
                 gps_state_.vel_n = msg->velN / 1000.0;

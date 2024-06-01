@@ -1,0 +1,7 @@
+<launch>
+    <node pkg="xbot_remote" type="xbot_remote" name="xbot_remote" output="screen" respawn="true" respawn_delay="10">
+        <remap from="/xbot_remote/cmd_vel" to="/joy_vel"/>
+    </node>
+</launch>
+
+<!-- 远程控制 -->

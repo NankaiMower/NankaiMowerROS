@@ -1,0 +1,17 @@
+<launch>
+    <node pkg="mower_logic" type="mower_logic" name="mower_logic" output="screen">
+        <param name="automatic_start"       value="false"/>
+        <param name="docking_distance"      value="1.0"/>
+        <param name="undock_distance"       value="1.0"/>
+        <!-- 0.13 works well for the Classic 500. -->
+        <param name="tool_width"            value="0.13"/>
+        <param name="enable_mower"          value="true"/>
+        <param name="battery_empty_voltage" value="20.0"/>
+        <!-- How many outlines should the mover drive. It's not recommended to set this below 4. -->
+        <param name="outline_count"         value="2"/>
+        <param name="outline_offset"        value="0.05"/>
+        <param name="battery_full_voltage"  value="24.0"/>
+    </node>
+</launch>
+
+<!-- 运动逻辑相关 -->
