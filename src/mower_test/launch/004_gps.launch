@@ -1,6 +1,7 @@
 
 <launch>
     <include file="/opt/open_mower_ros/src/mower_test/launch/003_ntrip.launch" />
+
     <node pkg="xbot_driver_gps" type="driver_gps_node" name="xbot_driver_gps"
           output="screen"
           clear_params="true"
@@ -25,3 +26,5 @@
 </launch>
 
 <!-- 这个文件检查GPS是否正确，可选择相对或者绝对位置 -->
+<!-- 相关文件 ./src/ntrip_client/scripts/ntrip_ros.py -->
+<!-- 相关文件 ./src/xbot_driver_gps/src/driver_gps_node.cpp -->

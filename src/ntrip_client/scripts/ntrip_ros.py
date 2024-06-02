@@ -170,5 +170,10 @@ if __name__ == '__main__':
   ntrip_ros = NTRIPRos()
   sys.exit(ntrip_ros.run())
 
-# rostopic echo /nmea
-# rostopic echo /ntrip_client/rtcm
+"""
+[订阅]
+rostopic echo /ntrip_client/rtcm
+
+[发布]
+rostopic echo /nmea
+"""

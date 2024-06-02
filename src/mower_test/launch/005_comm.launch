@@ -4,3 +4,6 @@
         <rosparam file="/opt/open_mower_ros/src/mower_params/comms_xesc_mini_params.yaml"/>
     </node>
 </launch>
+
+<!-- 进行信息通讯 -->
+<!-- 相关文件 ./src/mower_comms/src/mower_comms.cpp -->

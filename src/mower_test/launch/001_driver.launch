@@ -5,3 +5,4 @@
 </launch>
 
 <!-- 这个文件配合命令测试单个电机能否通过setduty进行速度控制，以及电机信息，检查电机通信接口收发是否正常 -->
+<!-- 相关文件 ./src/mower_driver/xesc_driver/src/xesc_driver_node.cpp -->

@@ -100,5 +100,9 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-// rostopic echo /imu/data_raw
-// rostopic echo /imu/mag
+/*
+[发布]
+imu原数据和磁场相关信息
+rostopic echo /imu/data_raw
+rostopic echo /imu/mag
+*/

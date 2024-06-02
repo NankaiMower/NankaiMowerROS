@@ -582,8 +582,9 @@ int main(int argc, char **argv) {
 }
 
 /*
-rostopic echo /cmd_vel [订阅]
+[订阅]
+rostopic echo /cmd_vel 
+rostopic echo /mower_logic/current_state
 rostopic echo /mower/status
 rostopic echo /mower/wheel_ticks
-rostopic echo /mower_logic/current_state [订阅]
 */

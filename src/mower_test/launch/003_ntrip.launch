@@ -73,3 +73,4 @@
 
 <!-- 这个文件检查NTRIP能否正确获取nmea和rtcm信息 -->
 <!-- 要配合GPS -->
+<!-- 相关文件 ./src/ntrip_client/scripts/ntrip_ros.py -->

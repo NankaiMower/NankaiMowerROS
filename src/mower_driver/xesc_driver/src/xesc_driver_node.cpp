@@ -55,5 +55,16 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-// rostopic echo sensors/core
-// rostopic pub /xesc_driver_node/a_driver/duty_cycle std_msgs/Float32 0.3
+/*
+[发布]
+电机及其驱动相关信息
+rostopic echo sensors/core
+
+[订阅]
+接收一个电机占空比数值，将电机设置为相应的速度
+rostopic echo /xesc_driver_node/a_driver/duty_cycle
+
+[测试]
+rostopic pub -r 500 /xesc_driver_node/a_driver/duty_cycle std_msgs/Float32 0.1
+rostopic pub -r 500 /xesc_driver_node/a_driver/duty_cycle std_msgs/Float32 -- -0.2
+*/
