@@ -1,7 +1,7 @@
 <launch>
-    <include file="/opt/NankaiMowerROS/src/mower_test/launch/002_imu.launch" />
-    <include file="/opt/NankaiMowerROS/src/mower_test/launch/004_gps.launch" />
-    <include file="/opt/NankaiMowerROS/src/mower_test/launch/005_comm.launch" />
+    <include file="/opt/open_mower_ros/src/mower_test/launch/002_imu.launch" />
+    <include file="/opt/open_mower_ros/src/mower_test/launch/004_gps.launch" />
+    <include file="/opt/open_mower_ros/src/mower_test/launch/005_comm.launch" />
 
     <node pkg="xbot_positioning" type="xbot_positioning" name="xbot_positioning" output="screen" required="true">
         <remap from="~imu_in" to="/imu/data_raw"/>

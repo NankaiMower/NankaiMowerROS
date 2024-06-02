@@ -1,11 +1,10 @@
 <launch>
-    <include file="/opt/NankaiMowerROS/src/mower_test/launch/009_loc_and_nav.launch" />
-    <include file="/opt/NankaiMowerROS/src/mower_test/launch/010_logic.launch" />
-    <include file="/opt/NankaiMowerROS/src/mower_test/launch/011_coverage.launch" />
-    <include file="/opt/NankaiMowerROS/src/mower_test/launch/012_cmd.launch" />
-    <include file="/opt/NankaiMowerROS/src/mower_test/launch/013_remote.launch" />
-    <include file="/opt/NankaiMowerROS/src/mower_test/launch/014_monitor.launch" />
-    <include file="/opt/NankaiMowerROS/src/mower_test/launch/015_logic_monitor.launch" />
+    <include file="/opt/open_mower_ros/src/mower_test/launch/010_logic.launch" />
+    <include file="/opt/open_mower_ros/src/mower_test/launch/011_coverage.launch" />
+    <include file="/opt/open_mower_ros/src/mower_test/launch/012_cmd.launch" />
+    <include file="/opt/open_mower_ros/src/mower_test/launch/013_remote.launch" />
+    <include file="/opt/open_mower_ros/src/mower_test/launch/014_monitor.launch" />
+    <include file="/opt/open_mower_ros/src/mower_test/launch/015_logic_monitor.launch" />
 </launch>
 
 <!-- 联合测试 -->

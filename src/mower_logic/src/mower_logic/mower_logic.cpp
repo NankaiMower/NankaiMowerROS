@@ -240,11 +240,11 @@ bool setMowerEnabled(bool enabled)
 /// @brief Halt all bot movement
 // FIXME: 
 void stopMoving() {
-   // ROS_INFO_STREAM("om_mower_logic: stopMoving() - stopping bot movement");
-    geometry_msgs::Twist stop;
-    stop.angular.z = 0;
-    stop.linear.x = 0;
-    cmd_vel_pub.publish(stop);
+    ROS_INFO_STREAM("om_mower_logic: stopMoving() - stopping bot movement");
+    // geometry_msgs::Twist stop;
+    // stop.angular.z = 0;
+    // stop.linear.x = 0;
+    // cmd_vel_pub.publish(stop);
 }
 
 /// @brief If the BLADE motor is currently enabled, we stop it
@@ -725,3 +725,24 @@ int main(int argc, char **argv) {
     return 0;
 }
 
+/*
+rostopic echo /joy_vel
+rostopic echo /logic_vel
+rostopic echo /move_base_flex/exe_path/cancel
+rostopic echo /move_base_flex/exe_path/feedback
+rostopic echo /move_base_flex/exe_path/goal
+rostopic echo /move_base_flex/exe_path/result
+rostopic echo /move_base_flex/exe_path/status
+rostopic echo /move_base_flex/move_base/cancel
+rostopic echo /move_base_flex/move_base/feedback
+rostopic echo /move_base_flex/move_base/goal
+rostopic echo /move_base_flex/move_base/result
+rostopic echo /move_base_flex/move_base/status
+rostopic echo /mower/status
+rostopic echo /mower_logic/current_state
+rostopic echo /mower_logic/mowing_path
+rostopic echo /mower_logic/parameter_descriptions
+rostopic echo /mower_logic/parameter_updates
+rostopic echo /xbot/action
+rostopic echo /xbot_positioning/xb_pose
+*/

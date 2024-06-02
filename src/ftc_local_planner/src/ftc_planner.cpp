@@ -92,6 +92,16 @@ namespace ftc_local_planner {
         }
         global_plan_pub.publish(path);
 
+        // // 遍历计划中的每个点
+        // for (const auto &pose_stamped : global_plan) {
+        //     // 获取点的位置坐标
+        //     double x = pose_stamped.pose.position.x;
+        //     double y = pose_stamped.pose.position.y;
+
+        //     // 打印元组（x y）
+        //     std::cout << "    (" << x << " " << y << ")" << std::endl;
+        // }
+
         ROS_INFO_STREAM("Got new global plan with " << plan.size() << " points.");
 
         return true;
@@ -150,7 +160,7 @@ namespace ftc_local_planner {
         // Then, update the planner state.
         auto new_planner_state = update_planner_state();
         if (new_planner_state != current_state) {
-            ROS_INFO_STREAM("Switching to state " << new_planner_state);
+            ROS_INFO_STREAM("From " << current_state << " Switching to state " << new_planner_state);
             state_entered_time = ros::Time::now();
             current_state = new_planner_state;
         }
@@ -163,6 +173,8 @@ namespace ftc_local_planner {
             cmd_vel.twist.angular.z = 0;
             return RET_COLLISION;
         }
+
+        ROS_INFO_STREAM("[command] (final) linear.x " << cmd_vel.twist.linear.x << " angular.z " << cmd_vel.twist.angular.z);
 
         return RET_SUCCESS;
     }
@@ -348,7 +360,6 @@ namespace ftc_local_planner {
             viz.pose = tf2::toMsg(current_control_point);
             global_point_pub.publish(viz);
         }
-        // FIXME: Timed out waiting for transform from base_link to map to become available before running costmap, tf error: canTransform: target_frame map does not exist. canTransform: source_frame base_link does not exist.. canTransform returned after 0.100285 timeout was 0.1.
         auto map_to_base = tf_buffer->lookupTransform("base_link", "map", ros::Time(), ros::Duration(1.0));
         tf2::doTransform(current_control_point, local_control_point, map_to_base);
 

@@ -1,6 +1,6 @@
 <launch>
     <node pkg="mower_comms" type="mower_comms" name="mower_comms" output="screen">
-        <rosparam file="/opt/NankaiMowerROS/src/mower_params/comms_general_params.yaml"/>
-        <rosparam file="/opt/NankaiMowerROS/src/mower_params/comms_xesc_mini_params.yaml"/>
+        <rosparam file="/opt/open_mower_ros/src/mower_params/comms_general_params.yaml"/>
+        <rosparam file="/opt/open_mower_ros/src/mower_params/comms_xesc_mini_params.yaml"/>
     </node>
 </launch>

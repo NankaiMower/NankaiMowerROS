@@ -1,12 +1,12 @@
 
 <launch>
-    <include file="/opt/NankaiMowerROS/src/mower_test/launch/003_ntrip.launch" />
+    <include file="/opt/open_mower_ros/src/mower_test/launch/003_ntrip.launch" />
     <node pkg="xbot_driver_gps" type="driver_gps_node" name="xbot_driver_gps"
           output="screen"
           clear_params="true"
           respawn="true"
           respawn_delay="5">
-        <rosparam file="/opt/NankaiMowerROS/src/mower_params/gps/comms_gps_params.yaml"/>
+        <rosparam file="/opt/open_mower_ros/src/mower_params/gps/comms_gps_params.yaml"/>
         <param name="baudrate" value="921600" />
 
         <!-- 绝对 -->

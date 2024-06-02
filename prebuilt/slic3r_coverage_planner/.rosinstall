@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /opt/prebuilt/slic3r_coverage_planner/setup.sh
