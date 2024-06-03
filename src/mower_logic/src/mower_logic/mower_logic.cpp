@@ -15,8 +15,6 @@
 //
 //
 
-// #define VERBOSE_DEBUG   1
-
 #include "ros/ros.h"
 #include "slic3r_coverage_planner/PlanPath.h"
 #include "mower_map/GetMowingAreaSrv.h"
@@ -59,7 +57,8 @@ dynamic_reconfigure::Server<mower_logic::MowerLogicConfig> *reconfigServer;
 actionlib::SimpleActionClient<mbf_msgs::MoveBaseAction> *mbfClient;
 actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *mbfClientExePath;
 
-ros::Publisher cmd_vel_pub, high_level_state_publisher;
+ros::Publisher cmd_vel_pub, path_pub, high_level_state_publisher;
+
 mower_logic::MowerLogicConfig last_config;
 
 geometry_msgs::Twist lastJoyVel;
@@ -75,7 +74,6 @@ ros::Time last_good_gps(0.0);
 mower_msgs::HighLevelStatus high_level_status;
 
 bool mowerEnabled = false;
-
 
 Behavior *currentBehavior = &IdleBehavior::INSTANCE;
 
@@ -120,20 +118,14 @@ void setRobotPose(geometry_msgs::Pose &pose) {
 }
 
 void poseReceived(const xbot_msgs::AbsolutePose::ConstPtr &msg) {
- 
     last_pose = *msg;
-
- #ifdef VERBOSE_DEBUG
-    ROS_INFO("om_mower_logic: pose received with accuracy %f", last_pose.position_accuracy);
-#endif
+    // ROS_INFO("om_mower_logic: pose received with accuracy %f", last_pose.position_accuracy);
     pose_time = ros::Time::now();
 }
 
 void statusReceived(const mower_msgs::Status::ConstPtr &msg) {
-#ifdef VERBOSE_DEBUG
-    ROS_INFO("om_mower_logic: statusReceived");
-#endif
     last_status = *msg;
+    // ROS_INFO("om_mower_logic: statusReceived");
     status_time = ros::Time::now();
 }
 
@@ -240,7 +232,7 @@ bool setMowerEnabled(bool enabled)
 /// @brief Halt all bot movement
 // FIXME: 
 void stopMoving() {
-    ROS_INFO_STREAM("om_mower_logic: stopMoving() - stopping bot movement");
+    // ROS_INFO_STREAM("om_mower_logic: stopMoving() - stopping bot movement");
     // geometry_msgs::Twist stop;
     // stop.angular.z = 0;
     // stop.linear.x = 0;
@@ -410,7 +402,7 @@ void checkSafety(const ros::TimerEvent &timer_event) {
 }
 
 void reconfigureCB(mower_logic::MowerLogicConfig &c, uint32_t level) {
-    ROS_INFO_STREAM("om_mower_logic: Setting mower_logic config");
+    ROS_INFO_STREAM("[mower_logic] Setting mower_logic config");
     last_config = c;
 }
 
@@ -488,61 +480,60 @@ int main(int argc, char **argv) {
     reconfigServer = new dynamic_reconfigure::Server<mower_logic::MowerLogicConfig>(mutex, *paramNh);
     reconfigServer->setCallback(reconfigureCB);
 
-    // FIXME: 处理手柄传送的数据, 一卡一卡的
-    cmd_vel_pub = n->advertise<geometry_msgs::Twist>("/logic_vel", 1);
+    // 根据运行逻辑来进行小车控制
+    cmd_vel_pub = n->advertise<geometry_msgs::Twist>(
+            "/logic_vel", 1);
+    high_level_state_publisher = n->advertise<mower_msgs::HighLevelStatus>(
+            "mower_logic/current_state", 100, true);
 
-    ros::Publisher path_pub;
-
-
-    path_pub = n->advertise<nav_msgs::Path>("mower_logic/mowing_path", 100, true);
-    high_level_state_publisher = n->advertise<mower_msgs::HighLevelStatus>("mower_logic/current_state", 100, true);
-
-    pathClient = n->serviceClient<slic3r_coverage_planner::PlanPath>(
-            "slic3r_coverage_planner/plan_path");
+    // 地图服务
     mapClient = n->serviceClient<mower_map::GetMowingAreaSrv>(
             "mower_map_service/get_mowing_area");
     clearMapClient = n->serviceClient<mower_map::ClearMapSrv>(
             "mower_map_service/clear_map");
-
-    gpsClient = n->serviceClient<xbot_positioning::GPSControlSrv>(
-            "xbot_positioning/set_gps_state");
-    positioningClient = n->serviceClient<xbot_positioning::SetPoseSrv>(
-            "xbot_positioning/set_robot_pose");
-    actionRegistrationClient = n->serviceClient<xbot_msgs::RegisterActionsSrv>(
-            "xbot/register_actions");
-
-
-    mowClient = n->serviceClient<mower_msgs::MowerControlSrv>(
-            "mower_service/mow_enabled");
-    emergencyClient = n->serviceClient<mower_msgs::EmergencyStopSrv>(
-            "mower_service/emergency");
-
     dockingPointClient = n->serviceClient<mower_map::GetDockingPointSrv>(
             "mower_map_service/get_docking_point");
-
-    pathProgressClient = n->serviceClient<ftc_local_planner::PlannerGetProgress>(
-            "/move_base_flex/FTCPlanner/planner_get_progress");
-
     setNavPointClient = n->serviceClient<mower_map::SetNavPointSrv>(
             "mower_map_service/set_nav_point");
     clearNavPointClient = n->serviceClient<mower_map::ClearNavPointSrv>(
             "mower_map_service/clear_nav_point");
 
+    // 定位服务
+    gpsClient = n->serviceClient<xbot_positioning::GPSControlSrv>(
+            "xbot_positioning/set_gps_state");
+    positioningClient = n->serviceClient<xbot_positioning::SetPoseSrv>(
+            "xbot_positioning/set_robot_pose");
 
+    // action注册服务
+    actionRegistrationClient = n->serviceClient<xbot_msgs::RegisterActionsSrv>(
+            "xbot/register_actions");
 
+    // 机身服务
+    mowClient = n->serviceClient<mower_msgs::MowerControlSrv>(
+            "mower_service/mow_enabled");
+    emergencyClient = n->serviceClient<mower_msgs::EmergencyStopSrv>(
+            "mower_service/emergency");
+
+    // 路径规划服务
+    pathClient = n->serviceClient<slic3r_coverage_planner::PlanPath>(
+            "slic3r_coverage_planner/plan_path");
+    pathProgressClient = n->serviceClient<ftc_local_planner::PlannerGetProgress>(
+            "/move_base_flex/FTCPlanner/planner_get_progress");
+
+    // 路径规划action
     mbfClient = new actionlib::SimpleActionClient<mbf_msgs::MoveBaseAction>("/move_base_flex/move_base");
     mbfClientExePath = new actionlib::SimpleActionClient<mbf_msgs::ExePathAction>("/move_base_flex/exe_path");
 
-
+    // 订阅消息处理（机身状态、位姿、手柄、行为）
     ros::Subscriber status_sub = n->subscribe("/mower/status", 0, statusReceived, ros::TransportHints().tcpNoDelay(true));
     ros::Subscriber pose_sub = n->subscribe("/xbot_positioning/xb_pose", 0, poseReceived, ros::TransportHints().tcpNoDelay(true));
-    // 手柄传送过来的数据，手柄坐标移动信息就改变
     ros::Subscriber joy_cmd = n->subscribe("/joy_vel", 0, joyVelReceived, ros::TransportHints().tcpNoDelay(true));
     ros::Subscriber action = n->subscribe("xbot/action", 0, actionReceived, ros::TransportHints().tcpNoDelay(true));
 
+    // 订阅服务处理（高级控制服务）
     ros::ServiceServer high_level_control_srv = n->advertiseService("mower_service/high_level_control", highLevelCommand);
 
-
+    // 开启两个异步线程
     ros::AsyncSpinner asyncSpinner(2);
     asyncSpinner.start();
 
@@ -738,7 +729,6 @@ rostopic echo /move_base_flex/move_base/feedback
 rostopic echo /move_base_flex/move_base/goal
 rostopic echo /move_base_flex/move_base/result
 rostopic echo /move_base_flex/move_base/status
-rostopic echo /mower/status
 rostopic echo /mower_logic/current_state
 rostopic echo /mower_logic/mowing_path
 rostopic echo /mower_logic/parameter_descriptions

@@ -220,6 +220,7 @@ void publishStatus() {
 
     // FIXME: fake voltage
     status_msg.v_battery = 28.0; // last_ll_status.v_system;
+    // status_msg.v_battery = last_ll_status.v_system;
     status_msg.v_charge = last_ll_status.v_charge;
     status_msg.charge_current = last_ll_status.charging_current;
 
