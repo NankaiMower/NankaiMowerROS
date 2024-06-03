@@ -122,7 +122,10 @@ void onImu(const sensor_msgs::Imu::ConstPtr &msg) {
     odom_trans.transform.rotation = odometry.pose.pose.orientation;
 
     static tf2_ros::TransformBroadcaster transform_broadcaster;
+    // ROS_INFO_STREAM("############### sendTransform #####################");
     transform_broadcaster.sendTransform(odom_trans);
+    // ROS_INFO_STREAM(odometry.pose.pose.position.x << "  " << odometry.pose.pose.position.y << "  " << odometry.pose.pose.orientation);
+    // ROS_INFO_STREAM("############### sendTransform done #####################");
 
     if(publish_debug) {
         auto state = core.getState();
@@ -299,6 +302,8 @@ void onPose(const xbot_msgs::AbsolutePose::ConstPtr &msg) {
 int main(int argc, char **argv) {
     ros::init(argc, argv, "xbot_positioning");
 
+    ROS_INFO_STREAM("[xbot_positioning] start");
+
     has_gps = false;
     gps_enabled = true;
     vx = 0.0;
@@ -333,6 +338,7 @@ int main(int argc, char **argv) {
         kalman_state = paramNh.advertise<xbot_positioning::KalmanState>("kalman_state", 50);
     }
 
+    ROS_INFO_STREAM("[xbot_positioning] imu_in subscribe start");
     ros::Subscriber imu_sub = paramNh.subscribe("imu_in", 10, onImu);
     ros::Subscriber pose_sub = paramNh.subscribe("xb_pose_in", 10, onPose);
     ros::Subscriber wheel_tick_sub = paramNh.subscribe("wheel_ticks_in", 10, onWheelTicks);

@@ -146,11 +146,12 @@ bool DockingBehavior::dock_straight() {
                 ROS_INFO_STREAM(
                         "Docking stopped, because we reached end pose. Voltage was " << last_status.v_charge
                                                                                      << " V.");
-                if (last_status.v_charge > 5.0) {
+                // FIXME: 电池电压
+                // if (last_status.v_charge > 5.0) {
                     mbfClientExePath->cancelGoal();
                     dockingSuccess = true;
                     stopMoving();
-                }
+                // }
                 waitingForResult = false;
                 break;
             default:

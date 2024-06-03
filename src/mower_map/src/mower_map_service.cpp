@@ -299,11 +299,19 @@ void buildMap() {
     ROS_INFO_STREAM("Map Position: x=" << origin.x() << ", y=" << origin.y());
     ROS_INFO_STREAM("Map Size: x=" << (maxX - minX) << ", y=" << (maxY - minY));
 
+    ROS_INFO_STREAM("1111");
+    ROS_INFO_STREAM("data: " << maxX << "  " << minX << "  " << maxY << "  " << minY);
+    ROS_INFO_STREAM("data: " << maxX - minX << "  " << maxY - minY << "  " << origin);
     map.setGeometry(grid_map::Length(maxX - minX, maxY - minY), 0.05, origin);
+    ROS_INFO_STREAM("2222");
     map.setTimestamp(ros::Time::now().toNSec());
+    ROS_INFO_STREAM("3333");
 
     map.clearAll();
+    ROS_INFO_STREAM("4444");
     map["navigation_area"].setConstant(1.0);
+
+    ROS_INFO_STREAM("5555");
 
     grid_map::Matrix &data = map["navigation_area"];
     for (auto mowingArea: navigation_areas) {

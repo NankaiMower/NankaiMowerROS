@@ -59,31 +59,53 @@ actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *mbfClientExePath;
 
 ros::Publisher cmd_vel_pub, path_pub, high_level_state_publisher;
 
+// 保留上一状态
+
 mower_logic::MowerLogicConfig last_config;
-
 geometry_msgs::Twist lastJoyVel;
-
-// store some values for safety checks
-ros::Time pose_time(0.0);
 xbot_msgs::AbsolutePose last_pose;
-ros::Time status_time(0.0);
 mower_msgs::Status last_status;
-
-ros::Time last_good_gps(0.0);
-
 mower_msgs::HighLevelStatus high_level_status;
 
-bool mowerEnabled = false;
+ros::Time pose_time(0.0);
+ros::Time status_time(0.0);
+ros::Time last_good_gps(0.0);
+
+bool last_mowerEnabled = false;
 
 Behavior *currentBehavior = &IdleBehavior::INSTANCE;
 
-void setEmergencyMode(bool emergency);
+// TODO: 定义的函数顺序有点乱，需要整理
+void registerActions(std::string prefix, const std::vector<xbot_msgs::ActionInfo> &actions);
+void reconfigureCB(mower_logic::MowerLogicConfig &c, uint32_t level);
 
+void poseReceived(const xbot_msgs::AbsolutePose::ConstPtr &msg);
+void statusReceived(const mower_msgs::Status::ConstPtr &msg);
+void actionReceived(const std_msgs::String::ConstPtr &action);
+void joyVelReceived(const geometry_msgs::Twist::ConstPtr &joy_vel);
+
+bool isGpsGood();
+bool setGPS(bool enabled);
+
+void stopBlade();
+void stopMoving();
+void setMowerEnabled(bool enabled);
+void setEmergencyMode(bool emergency);
+void setRobotPose(geometry_msgs::Pose &pose);
+void abortExecution();
+
+void updateUI(const ros::TimerEvent &timer_event);
+void checkSafety(const ros::TimerEvent &timer_event);
+
+bool highLevelCommand(mower_msgs::HighLevelControlSrvRequest &req, mower_msgs::HighLevelControlSrvResponse &res);
+
+// 注册行为
 void registerActions(std::string prefix, const std::vector<xbot_msgs::ActionInfo> &actions) {
     xbot_msgs::RegisterActionsSrv srv;
     srv.request.node_prefix = prefix;
     srv.request.actions = actions;
 
+    // 尝试注册多次
     ros::Rate retry_delay(1);
     for(int i = 0; i < 10; i++) {
         if(actionRegistrationClient.call(srv)) {
@@ -95,6 +117,7 @@ void registerActions(std::string prefix, const std::vector<xbot_msgs::ActionInfo
     }
 }
 
+// 启用位姿信息
 void setRobotPose(geometry_msgs::Pose &pose) {
     xbot_positioning::SetPoseSrv pose_srv;
     pose_srv.request.robot_pose = pose;
@@ -117,25 +140,29 @@ void setRobotPose(geometry_msgs::Pose &pose) {
     }
 }
 
+// 坐标信息接收缓存
 void poseReceived(const xbot_msgs::AbsolutePose::ConstPtr &msg) {
     last_pose = *msg;
-    // ROS_INFO("om_mower_logic: pose received with accuracy %f", last_pose.position_accuracy);
+    // ROS_INFO("om_mower_logic: pose received with accuracy          %f", last_pose.position_accuracy);
+    // ROS_INFO("om_mower_logic: pose received with orientation_valid %f", last_pose.orientation_valid);
     pose_time = ros::Time::now();
 }
 
+// 状态信息接收缓存
 void statusReceived(const mower_msgs::Status::ConstPtr &msg) {
     last_status = *msg;
     // ROS_INFO("om_mower_logic: statusReceived");
     status_time = ros::Time::now();
 }
 
-// Abort the currently running behaviour
+// 直接终止当前状态
 void abortExecution() {
     if (currentBehavior != nullptr) {
         currentBehavior->abort();
     }
 }
 
+// 启用GPS
 bool setGPS(bool enabled) {
     xbot_positioning::GPSControlSrv gps_srv;
     gps_srv.request.gps_enabled = enabled;
@@ -160,20 +187,17 @@ bool setGPS(bool enabled) {
     return success;
 }
 
-
-/// @brief If the BLADE Motor is not in the requested status (enabled),we call the 
-///        the mower_service/mow_enabled service to enable/disable. TODO: get feedback about spinup and delay if needed
-/// @param enabled 
-/// @return 
-bool setMowerEnabled(bool enabled) 
-{
+// 设置当前的割草状态
+// TODO: get feedback about spinup and delay if needed
+void setMowerEnabled(bool enabled) {
+    // FIXME: 如果和配置的状态不一样说明配置有问题
     if (!last_config.enable_mower && enabled) {
-        // ROS_INFO_STREAM("om_mower_logic: setMowerEnabled() - Mower should be enabled but is hard-disabled in the config.");
+        ROS_INFO_STREAM("om_mower_logic: setMowerEnabled() - Mower should be enabled but is hard-disabled in the config.");
         enabled = false;
     }
     
-    // status change ?
-    if (mowerEnabled != enabled)
+    // 如果之前状态没有割草现在要割草，或者之前在割草现在不割草
+    if (last_mowerEnabled != enabled)
     {
         mower_msgs::MowerControlSrv mow_srv;
         mow_srv.request.mow_enabled = enabled;
@@ -197,40 +221,36 @@ bool setMowerEnabled(bool enabled)
         }
 
         ROS_WARN_STREAM("#### om_mower_logic: setMowerEnabled(" << enabled << ") call completed within " << (ros::Time::now()-started).toSec() << "s");
-        mowerEnabled = enabled;
+        last_mowerEnabled = enabled;
     }
 
-// TODO: Spinup feedback & delay
-/*    if (enabled) {
-        ROS_INFO_STREAM("enabled mower, waiting for it to speed up");
+    // TODO: Spinup feedback & delay
+    // if (enabled) {
+    //     ROS_INFO_STREAM("enabled mower, waiting for it to speed up");
 
-        // TODO timeout and error
-        ros::Time started = ros::Time::now();
-        while (true) {
-            if (status_time > started) {
-                // we have a current status message, wait for mower to speed up
-                bool mower_running = (last_status.speed_mow_status & 0b10);
-                if (mower_running) {
-                    ROS_INFO_STREAM("mower motor started");
-                    return true;
-                }
-            }
-            if (ros::Time::now() - started > ros::Duration(25.0)) {
-                // mower was not able to start
-                ROS_ERROR_STREAM("error starting mower motor...");
-                setMowerEnabled(false);
-                return false;
-            }
-        }
-    }*/
-
-    return true;
+    //     // TODO timeout and error
+    //     ros::Time started = ros::Time::now();
+    //     while (true) {
+    //         if (status_time > started) {
+    //             // we have a current status message, wait for mower to speed up
+    //             bool mower_running = (last_status.speed_mow_status & 0b10);
+    //             if (mower_running) {
+    //                 ROS_INFO_STREAM("mower motor started");
+    //                 return true;
+    //             }
+    //         }
+    //         if (ros::Time::now() - started > ros::Duration(25.0)) {
+    //             // mower was not able to start
+    //             ROS_ERROR_STREAM("error starting mower motor...");
+    //             setMowerEnabled(false);
+    //             return false;
+    //         }
+    //     }
+    // }
 }
 
-
-
-/// @brief Halt all bot movement
-// FIXME: 
+// 停止行走电机
+// FIXME: 什么时候才该调用
 void stopMoving() {
     // ROS_INFO_STREAM("om_mower_logic: stopMoving() - stopping bot movement");
     // geometry_msgs::Twist stop;
@@ -239,30 +259,26 @@ void stopMoving() {
     // cmd_vel_pub.publish(stop);
 }
 
-/// @brief If the BLADE motor is currently enabled, we stop it
-void stopBlade()
-{
-   // ROS_INFO_STREAM("om_mower_logic: stopBlade() - stopping blade motor if running");
-    if (mowerEnabled)
-    {
+// 停止割草电机
+void stopBlade() {
+    // ROS_INFO_STREAM("om_mower_logic: stopBlade() - stopping blade motor if running");
+    if (last_mowerEnabled) {
         setMowerEnabled(false);
     }
     // ROS_INFO_STREAM("om_mower_logic: stopBlade() - finished");
 }
-
-
-/// @brief Stop BLADE motor and any movement
-/// @param emergency 
-void setEmergencyMode(bool emergency) 
-{
+// 遇到紧急情况，需要停止割草电机和行走电机
+void setEmergencyMode(bool emergency) {
     stopBlade();
     stopMoving();
+    
     mower_msgs::EmergencyStopSrv emergencyStop;
     emergencyStop.request.emergency = emergency;
 
     ros::Rate retry_delay(1);
     bool success = false;
     for(int i = 0; i < 10; i++) {
+        // FIXME: always return true
         if(emergencyClient.call(emergencyStop)) {
             ROS_INFO_STREAM("successfully set emergency enabled to " << emergency);
             success = true;
@@ -275,7 +291,6 @@ void setEmergencyMode(bool emergency)
     if(!success) {
         ROS_ERROR_STREAM("Error setting emergency. THIS SHOULD NEVER HAPPEN");
     }
-
 }
 
 void updateUI(const ros::TimerEvent &timer_event) {
@@ -292,16 +307,19 @@ void updateUI(const ros::TimerEvent &timer_event) {
     high_level_state_publisher.publish(high_level_status);
 }
 
+// TODO: think about the "recent gps flag" since it only looks at the time. E.g. if we were standing still this would still pause even if no GPS updates are needed during standstill.
+// 检查GPS返回状态好坏
 bool isGpsGood() {
-    // GPS is good if orientation is valid, we have low accuracy and we have a recent GPS update.
-    // TODO: think about the "recent gps flag" since it only looks at the time. E.g. if we were standing still this would still pause even if no GPS updates are needed during standstill.
-    return last_pose.orientation_valid && last_pose.position_accuracy < last_config.max_position_accuracy && (last_pose.flags & xbot_msgs::AbsolutePose::FLAG_SENSOR_FUSION_RECENT_ABSOLUTE_POSE);
+    return 
+        last_pose.orientation_valid && 
+        last_pose.position_accuracy < last_config.max_position_accuracy && 
+        (last_pose.flags & xbot_msgs::AbsolutePose::FLAG_SENSOR_FUSION_RECENT_ABSOLUTE_POSE);
 }
 
-/// @brief Called every 0.5s, used to control BLADE motor via mower_enabled variable and stop any movement in case of /odom and /mower/status outages
-/// @param timer_event 
+// 定期调用
+// 只有割草的状态下可能要启动割草电机
+// 状态中断时需要停止任何运动
 void checkSafety(const ros::TimerEvent &timer_event) {
-    // call the mower
     setMowerEnabled(currentBehavior != nullptr && currentBehavior->mower_enabled());
 
     high_level_status.emergency = last_status.emergency;
@@ -309,10 +327,14 @@ void checkSafety(const ros::TimerEvent &timer_event) {
 
     // send to idle if emergency and we're not recording
     if(last_status.emergency) {
-        if(currentBehavior != &AreaRecordingBehavior::INSTANCE && currentBehavior != &IdleBehavior::INSTANCE) {
+        if( currentBehavior != &AreaRecordingBehavior::INSTANCE && 
+            currentBehavior != &IdleBehavior::INSTANCE
+        ) {
             abortExecution();
         } else if(last_status.v_charge > 10.0) {
-            // emergency and docked and idle or area recording, so it's safe to reset the emergency mode, reset it. It's safe since we won't start moving in this mode.
+            // emergency and docked and idle or area recording, 
+            // so it's safe to reset the emergency mode, reset it. 
+            // It's safe since we won't start moving in this mode.
             setEmergencyMode(false);
         }
     }
@@ -320,8 +342,8 @@ void checkSafety(const ros::TimerEvent &timer_event) {
     // TODO: Have a single point where we check for this timeout instead of twice (here and in the behavior)
     // check if odometry is current. If not, the GPS was bad so we stop moving.
     // Note that the mowing behavior will pause as well by itself.
-    if (ros::Time::now() - pose_time > ros::Duration(1.0))
-    {
+    // 如果没有持续更新位姿，说明位姿信息断开，需要停止
+    if (ros::Time::now() - pose_time > ros::Duration(1.0)) {
         stopBlade();
         stopMoving();
         ROS_WARN_STREAM_THROTTLE(5, "om_mower_logic: EMERGENCY pose values stopped. dt was: " << (ros::Time::now() - pose_time));
@@ -330,8 +352,7 @@ void checkSafety(const ros::TimerEvent &timer_event) {
  
     // check if status is current. if not, we have a problem since it contains wheel ticks and so on.
     // Since these should never drop out, we enter emergency instead of "only" stopping
-    if (ros::Time::now() - status_time > ros::Duration(3)) 
-    {
+    if (ros::Time::now() - status_time > ros::Duration(3)) {
         setEmergencyMode(true);
         ROS_WARN_STREAM_THROTTLE(5, "om_mower_logic: EMERGENCY /mower/status values stopped. dt was: " << (ros::Time::now() - status_time));
         return;
@@ -342,9 +363,10 @@ void checkSafety(const ros::TimerEvent &timer_event) {
     // if (last_status.right_esc_status.status <= mower_msgs::ESCStatus::ESC_STATUS_ERROR || last_status.left_esc_status.status <= mower_msgs::ESCStatus ::ESC_STATUS_ERROR) {
     //     setEmergencyMode(true);
     //     ROS_ERROR_STREAM(
-    //             "EMERGENCY: at least one motor control errored. errors left: " << (last_status.left_esc_status)
-    //                                                                            << ", status right: "
-    //                                                                            << last_status.right_esc_status);
+    //             "EMERGENCY: at least one motor control errored. errors left: " 
+    //             << (last_status.left_esc_status)
+    //             << ", status right: "
+    //             << last_status.right_esc_status);
     //     return;
     // }
 
@@ -401,6 +423,7 @@ void checkSafety(const ros::TimerEvent &timer_event) {
     }
 }
 
+// 重配置参数
 void reconfigureCB(mower_logic::MowerLogicConfig &c, uint32_t level) {
     ROS_INFO_STREAM("[mower_logic] Setting mower_logic config");
     last_config = c;
@@ -456,18 +479,19 @@ bool highLevelCommand(mower_msgs::HighLevelControlSrvRequest &req, mower_msgs::H
     return true;
 }
 
+// 对接受的action进行处理
 void actionReceived(const std_msgs::String::ConstPtr &action) {
     if(currentBehavior) {
         currentBehavior->handle_action(action->data);
     }
 }
 
+// 对手柄控制信息进行处理，且确保只有在记录区域状态的时候控制有效
 void joyVelReceived(const geometry_msgs::Twist::ConstPtr &joy_vel) {
     if(currentBehavior && currentBehavior->redirect_joystick()) {
         cmd_vel_pub.publish(joy_vel);
     }
 }
-
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "mower_logic");
@@ -528,7 +552,7 @@ int main(int argc, char **argv) {
     ros::Subscriber status_sub = n->subscribe("/mower/status", 0, statusReceived, ros::TransportHints().tcpNoDelay(true));
     ros::Subscriber pose_sub = n->subscribe("/xbot_positioning/xb_pose", 0, poseReceived, ros::TransportHints().tcpNoDelay(true));
     ros::Subscriber joy_cmd = n->subscribe("/joy_vel", 0, joyVelReceived, ros::TransportHints().tcpNoDelay(true));
-    ros::Subscriber action = n->subscribe("xbot/action", 0, actionReceived, ros::TransportHints().tcpNoDelay(true));
+    ros::Subscriber action = n->subscribe("/xbot/action", 0, actionReceived, ros::TransportHints().tcpNoDelay(true));
 
     // 订阅服务处理（高级控制服务）
     ros::ServiceServer high_level_control_srv = n->advertiseService("mower_service/high_level_control", highLevelCommand);
@@ -538,6 +562,13 @@ int main(int argc, char **argv) {
     asyncSpinner.start();
 
     ros::Rate r(1.0);
+
+    // 如果服务不存在，会输出错误信息，
+    // 并使用delete操作符删除动态分配的对象。
+    // 这样做的目的是，如果某个服务没有成功启动或找到，
+    // 那么依赖于这些服务的对象就不应该被创建或使用，
+    // 因此需要释放它们占用的内存。
+
 
     ROS_INFO("Waiting for a status message");
     while (status_time == ros::Time(0.0)) {
@@ -549,6 +580,7 @@ int main(int argc, char **argv) {
         }
         r.sleep();
     }
+
     ROS_INFO("Waiting for a pose message");
     while (pose_time == ros::Time(0.0)) {
         if (!ros::ok()) {
@@ -560,110 +592,91 @@ int main(int argc, char **argv) {
         r.sleep();
     }
 
-
-    ROS_INFO("Waiting for emergency service");
-    if (!emergencyClient.waitForExistence(ros::Duration(60.0, 0.0))) {
-        ROS_ERROR("Emergency server not found.");
-        delete (reconfigServer);
-        delete (mbfClient);
-        delete (mbfClientExePath);
-
-        return 1;
+    ROS_INFO("[Waiting for server] mapClient");
+    if (!mapClient.waitForExistence(ros::Duration(20.0))) {
+        ROS_ERROR("[Server service not found] mapClient");
+        delete (reconfigServer); delete (mbfClient); delete (mbfClientExePath); return 2;
     }
 
-
-    ROS_INFO("Waiting for path server");
-    if (!pathClient.waitForExistence(ros::Duration(60.0, 0.0))) {
-        ROS_ERROR("Path service not found.");
-        delete (reconfigServer);
-        delete (mbfClient);
-        delete (mbfClientExePath);
-
-
-        return 1;
-    }
-    ROS_INFO("Waiting for mower service");
-    if (!mowClient.waitForExistence(ros::Duration(60.0, 0.0))) {
-        ROS_ERROR("Mower service not found.");
-        delete (reconfigServer);
-        delete (mbfClient);
-        delete (mbfClientExePath);
-
-
-        return 1;
+    ROS_INFO("[Waiting for server] clearMapClient");
+    if (!clearMapClient.waitForExistence(ros::Duration(20.0))) {
+        ROS_ERROR("[Server service not found] clearMapClient");
+        delete (reconfigServer); delete (mbfClient); delete (mbfClientExePath); return 2;
     }
 
-    ROS_INFO("Waiting for gps service");
-    if (!gpsClient.waitForExistence(ros::Duration(60.0, 0.0))) {
-        ROS_ERROR("GPS service not found.");
-        delete (reconfigServer);
-        delete (mbfClient);
-        delete (mbfClientExePath);
-
-        return 1;
-    }
-    ROS_INFO("Waiting for positioning service");
-    if (!positioningClient.waitForExistence(ros::Duration(60.0, 0.0))) {
-        ROS_ERROR("positioning service not found.");
-        delete (reconfigServer);
-        delete (mbfClient);
-        delete (mbfClientExePath);
-
-        return 1;
+    ROS_INFO("[Waiting for server] dockingPointClient");
+    if (!dockingPointClient.waitForExistence(ros::Duration(20.0))) {
+        ROS_ERROR("[Server service not found] dockingPointClient");
+        delete (reconfigServer); delete (mbfClient); delete (mbfClientExePath); return 2;
     }
 
-
-    ROS_INFO("Waiting for map server");
-    if (!mapClient.waitForExistence(ros::Duration(60.0, 0.0))) {
-        ROS_ERROR("Map server service not found.");
-        delete (reconfigServer);
-        delete (mbfClient);
-        delete (mbfClientExePath);
-        return 2;
-    }
-    ROS_INFO("Waiting for docking point server");
-    if (!dockingPointClient.waitForExistence(ros::Duration(60.0, 0.0))) {
-        ROS_ERROR("Docking server service not found.");
-        delete (reconfigServer);
-        delete (mbfClient);
-        delete (mbfClientExePath);
-        return 2;
-    }
-    ROS_INFO("Waiting for nav point server");
-    if (!setNavPointClient.waitForExistence(ros::Duration(60.0, 0.0))) {
-        ROS_ERROR("Set Nav Point server service not found.");
-        delete (reconfigServer);
-        delete (mbfClient);
-        delete (mbfClientExePath);
-        return 2;
-    }
-    ROS_INFO("Waiting for clear nav point server");
-    if (!clearNavPointClient.waitForExistence(ros::Duration(60.0, 0.0))) {
-        ROS_ERROR("Clear Nav Point server service not found.");
-        delete (reconfigServer);
-        delete (mbfClient);
-        delete (mbfClientExePath);
-        return 2;
+    ROS_INFO("[Waiting for server] setNavPointClient");
+    if (!setNavPointClient.waitForExistence(ros::Duration(20.0))) {
+        ROS_ERROR("[Server service not found] setNavPointClient");
+        delete (reconfigServer); delete (mbfClient); delete (mbfClientExePath); return 2;
     }
 
-    ROS_INFO("Waiting for move base flex");
-    if (!mbfClient->waitForServer(ros::Duration(60.0, 0.0))) {
-        ROS_ERROR("Move base flex not found.");
-        delete (reconfigServer);
-        delete (mbfClient);
-        delete (mbfClientExePath);
-        return 3;
+    ROS_INFO("[Waiting for server] clearNavPointClient");
+    if (!clearMapClient.waitForExistence(ros::Duration(20.0))) {
+        ROS_ERROR("[Server service not found] clearNavPointClient");
+        delete (reconfigServer); delete (mbfClient); delete (mbfClientExePath); return 2;
     }
 
-    ROS_INFO("Waiting for mowing path progress server");
-    if (!pathProgressClient.waitForExistence(ros::Duration(60.0, 0.0))) {
-        ROS_ERROR("FTCLocalPlanner progress server not found.");
-        delete (reconfigServer);
-        delete (mbfClient);
-        delete (mbfClientExePath);
-        return 3;
+    ROS_INFO("[Waiting for server] gpsClient");
+    if (!gpsClient.waitForExistence(ros::Duration(20.0))) {
+        ROS_ERROR("[Server service not found] gpsClient");
+        delete (reconfigServer); delete (mbfClient); delete (mbfClientExePath); return 1;
     }
 
+    ROS_INFO("[Waiting for server] positioningClient");
+    if (!positioningClient.waitForExistence(ros::Duration(20.0))) {
+        ROS_ERROR("[Server service not found] positioningClient");
+        delete (reconfigServer); delete (mbfClient); delete (mbfClientExePath); return 1;
+    }
+
+    ROS_INFO("[Waiting for server] actionRegistrationClient");
+    if (!actionRegistrationClient.waitForExistence(ros::Duration(20.0))) {
+        ROS_ERROR("[Server service not found] actionRegistrationClient");
+        delete (reconfigServer); delete (mbfClient); delete (mbfClientExePath); return 1;
+    }
+
+    ROS_INFO("[Waiting for server] mowClient");
+    if (!mowClient.waitForExistence(ros::Duration(20.0))) {
+        ROS_ERROR("[Server service not found] mowClient");
+        delete (reconfigServer); delete (mbfClient); delete (mbfClientExePath); return 1;
+    }
+
+    ROS_INFO("[Waiting for server] emergencyClient");
+    if (!emergencyClient.waitForExistence(ros::Duration(20.0))) {
+        ROS_ERROR("[Server service not found] emergencyClient");
+        delete (reconfigServer); delete (mbfClient); delete (mbfClientExePath); return 1;
+    }
+
+    ROS_INFO("[Waiting for server] pathClient");
+    if (!pathClient.waitForExistence(ros::Duration(20.0))) {
+        ROS_ERROR("[Server service not found] pathClient");
+        delete (reconfigServer); delete (mbfClient); delete (mbfClientExePath); return 3;
+    }
+
+    ROS_INFO("[Waiting for server] pathProgressClient");
+    if (!pathProgressClient.waitForExistence(ros::Duration(20.0))) {
+        ROS_ERROR("[Server service not found] pathProgressClient");
+        delete (reconfigServer); delete (mbfClient); delete (mbfClientExePath); return 3;
+    }
+
+    ROS_INFO("[Waiting for server] mbfClient");
+    if (!mbfClient->waitForServer(ros::Duration(20.0))) {
+        ROS_ERROR("[Server service not found] mbfClient");
+        delete (reconfigServer); delete (mbfClient); delete (mbfClientExePath); return 3;
+    }
+
+    ROS_INFO("[Waiting for server] mbfClientExePath");
+    if (!mbfClientExePath->waitForServer(ros::Duration(20.0))) {
+        ROS_ERROR("[Server service not found] mbfClientExePath");
+        delete (reconfigServer); delete (mbfClient); delete (mbfClientExePath); return 3;
+    }
+
+    // 确保在以上服务都启动之后的10秒内没有警告，可判断程序启动正常
     ros::Time started = ros::Time::now();
     while((ros::Time::now() - started).toSec() < 10.0) {
         ROS_INFO_STREAM("Waiting for an emergency status message");
@@ -675,23 +688,19 @@ int main(int argc, char **argv) {
         }
     }
 
+    // 开始正常运行
+    ROS_INFO("[mower_logic] ####### All services started normally. #######");
+    setEmergencyMode(false); 
 
-    ROS_INFO("om_mower_logic: Got all servers, we can mow");
-
-
-
-
+    // 定期检查
     ros::Timer safety_timer = n->createTimer(ros::Duration(0.5), checkSafety);
     ros::Timer ui_timer = n->createTimer(ros::Duration(1.0), updateUI);
 
-    // release emergency if it was set
-    setEmergencyMode(false);
-
-    // Behavior execution loop
+    // 主程序以状态机的形式循环执行
     while (ros::ok()) {
+        // 如果现在的状态非空，执行这个状态的功能（启动、执行、获取下一个状态、退出、进入下一个状态）
+        // 如果状态为空，到达未知状态，出错并报警
         if (currentBehavior != nullptr) {
-
-
             currentBehavior->start(last_config);
             Behavior *newBehavior = currentBehavior->execute();
             currentBehavior->exit();
@@ -700,8 +709,7 @@ int main(int argc, char **argv) {
             high_level_status.state_name = "NULL";
             high_level_status.state = mower_msgs::HighLevelStatus::HIGH_LEVEL_STATE_NULL;
             high_level_state_publisher.publish(high_level_status);
-            // we have no defined behavior, set emergency
-            ROS_ERROR_STREAM("null behavior - emergency mode");
+            ROS_ERROR_STREAM("### null behavior， please check ###");
             setEmergencyMode(true);
             ros::Rate r(1.0);
             r.sleep();

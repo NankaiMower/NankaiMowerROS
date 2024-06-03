@@ -174,7 +174,7 @@ namespace ftc_local_planner {
             return RET_COLLISION;
         }
 
-        ROS_INFO_STREAM("[command] (final) linear.x " << cmd_vel.twist.linear.x << " angular.z " << cmd_vel.twist.angular.z);
+        // ROS_INFO_STREAM("[command] (final) linear.x " << cmd_vel.twist.linear.x << " angular.z " << cmd_vel.twist.angular.z);
 
         return RET_SUCCESS;
     }
