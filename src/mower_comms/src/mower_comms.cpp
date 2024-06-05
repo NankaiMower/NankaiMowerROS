@@ -92,8 +92,10 @@ ros::ServiceClient highLevelClient;
 
 // FIXME: 
 bool is_emergency() {
-    return false;
-    // return emergency_high_level || emergency_low_level;
+    // return false;
+    // ROS_INFO_STREAM("emergency_high_level " << emergency_high_level);
+    // ROS_INFO_STREAM("emergency_low_level   " << emergency_low_level);
+    return emergency_high_level || emergency_low_level;
 }
 
 void publishActuators() {
@@ -206,8 +208,7 @@ void publishStatus() {
     }
 
     // overwrite emergency with the LL value.
-    // FIXME:
-    emergency_low_level = 0; //last_ll_status.emergency_bitmask > 0;
+    emergency_low_level = last_ll_status.emergency_bitmask > 0;
     if (!emergency_low_level) {
         // it obviously worked, reset the request
         ll_clear_emergency = false;
@@ -219,11 +220,10 @@ void publishStatus() {
     status_msg.emergency = is_emergency();
 
     // FIXME: fake voltage
-    status_msg.v_battery = 28.0; // last_ll_status.v_system;
-    // status_msg.v_battery = last_ll_status.v_system;
+    // status_msg.v_battery = 28.0; // last_ll_status.v_system;
+    status_msg.v_battery = last_ll_status.v_system;
     status_msg.v_charge = last_ll_status.v_charge;
     status_msg.charge_current = last_ll_status.charging_current;
-
 
     xesc_msgs::XescStateStamped mow_status, right_status, left_status;
     if(mow_interface) {
@@ -517,7 +517,7 @@ int main(int argc, char **argv) {
                         // Packet checksum is OK, process it
                         switch (buffer_decoded[0]) {
                             case PACKET_ID_LL_STATUS:
-                                // ROS_INFO_STREAM("PACKET_ID_LL_STATUS");
+                                ROS_INFO_STREAM("PACKET_ID_LL_STATUS");
                                 if (data_size == sizeof(struct ll_status)) {
                                     handleLowLevelStatus((struct ll_status *) buffer_decoded);
                                 } else {
@@ -544,7 +544,7 @@ int main(int argc, char **argv) {
                                 // }
                                 break;
                             default:
-                                // ROS_INFO_STREAM("Got unknown packet from Low Level Board");
+                                ROS_INFO_STREAM("Got unknown packet from Low Level Board");
                                 break;
                         }
                     } else {

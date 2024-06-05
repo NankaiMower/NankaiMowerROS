@@ -146,6 +146,9 @@ void onImu(const sensor_msgs::Imu::ConstPtr &msg) {
     xb_absolute_pose_msg.source = xbot_msgs::AbsolutePose::SOURCE_SENSOR_FUSION;
     xb_absolute_pose_msg.flags = xbot_msgs::AbsolutePose::FLAG_SENSOR_FUSION_DEAD_RECKONING;
 
+    xb_absolute_pose_msg.latitude = last_gps.latitude;
+    xb_absolute_pose_msg.longitiue = last_gps.longitiue;
+
     xb_absolute_pose_msg.orientation_valid = true;
     // TODO: send motion vector
     xb_absolute_pose_msg.motion_vector_valid = false;

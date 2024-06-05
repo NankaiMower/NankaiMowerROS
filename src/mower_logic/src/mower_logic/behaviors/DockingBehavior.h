@@ -23,7 +23,6 @@
 #include <nav_msgs/Odometry.h>
 #include "Behavior.h"
 #include "IdleBehavior.h"
-#include "DockingBehavior.h"
 #include "ros/ros.h"
 #include <tf2/LinearMath/Transform.h>
 #include "tf2_geometry_msgs/tf2_geometry_msgs.h"

@@ -30,13 +30,26 @@ extern bool setGPS(bool enabled);
 
 AreaRecordingBehavior AreaRecordingBehavior::INSTANCE;
 
-
 std::string AreaRecordingBehavior::state_name() {
     return "AREA_RECORDING";
 }
 
-
-
+std::string AreaRecordingBehavior::sub_state_name() {
+    // yes, this doesnt have a sub_sate, but we'll switch to behavior trees anyways. adding a substate here will break stuff
+    if(has_first_docking_pos) {
+        return "RECORD_DOCKING_POSITION";
+    }
+    switch (sub_state) {
+        case 0:
+            return "";
+        case 1:
+            return "RECORD_OUTLINE";
+        case 2:
+            return "RECORD_OBSTACLE";
+        default:
+            return "";
+    }
+}
 
 Behavior *AreaRecordingBehavior::execute() {
     setGPS(true);
@@ -508,23 +521,6 @@ uint8_t AreaRecordingBehavior::get_sub_state() {
 }
 uint8_t AreaRecordingBehavior::get_state() {
     return mower_msgs::HighLevelStatus::HIGH_LEVEL_STATE_RECORDING;
-}
-
-std::string AreaRecordingBehavior::sub_state_name() {
-    // yes, this doesnt have a sub_sate, but we'll switch to behavior trees anyways. adding a substate here will break stuff
-    if(has_first_docking_pos) {
-        return "RECORD_DOCKING_POSITION";
-    }
-    switch (sub_state) {
-        case 0:
-            return "";
-        case 1:
-            return "RECORD_OUTLINE";
-        case 2:
-            return "RECORD_OBSTACLE";
-        default:
-            return "";
-    }
 }
 
 void AreaRecordingBehavior::handle_action(std::string action) {

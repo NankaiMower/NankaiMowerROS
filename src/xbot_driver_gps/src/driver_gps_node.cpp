@@ -151,6 +151,10 @@ void convert_gps_result(const GpsInterface::GpsState &state, xbot_msgs::Absolute
     result.position_accuracy = state.position_accuracy;
     result.orientation_accuracy = state.vehicle_heading_accuracy;
 
+    result.latitude = state.pos_lat;
+    result.longitiue = state.pos_lon;
+
+    // ROS_INFO_STREAM(" result.latitude: " <<  result.latitude << " result.longitiue: " << result.longitiue);
 
     double heading = state.vehicle_heading_valid ? state.vehicle_heading : state.motion_heading;
     double headingAcc = state.vehicle_heading_valid ? state.vehicle_heading_accuracy : state.motion_heading_accuracy;

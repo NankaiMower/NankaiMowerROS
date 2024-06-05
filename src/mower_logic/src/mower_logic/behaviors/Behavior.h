@@ -35,7 +35,7 @@ protected:
     bool requested_continue_flag;
     bool requested_pause_flag;
 
-    bool isGPSGood;
+    bool currentGPSConnection;
     uint8_t sub_state;
 
     double time_in_state() {
@@ -56,13 +56,13 @@ public:
         return "";
     }
 
-    bool hasGoodGPS()
+    bool getGPSConnection()
     {
-        return isGPSGood;
+        return currentGPSConnection;
     }
 
-    void setGoodGPS(bool isGood) {
-        isGPSGood = isGood;
+    void setGPSConnection(bool isGood) {
+        currentGPSConnection = isGood;
     }
 
     void requestContinue()
@@ -99,7 +99,7 @@ public:
         requested_pause_flag = false;
         this->config = c;
         startTime = ros::Time::now();
-        isGPSGood = false;
+        currentGPSConnection = false;
         sub_state = 0;
         enter();
     }
