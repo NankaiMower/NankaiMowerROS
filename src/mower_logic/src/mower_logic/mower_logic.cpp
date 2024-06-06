@@ -197,7 +197,7 @@ void setMowerEnabled(bool enabled) {
     }
     
     // 如果之前状态没有割草现在要割草，或者之前在割草现在不割草
-    ROS_INFO_STREAM("last_mowerEnabled  " << last_mowerEnabled << "  enabled  " << enabled);
+    // ROS_INFO_STREAM("last_mowerEnabled  " << last_mowerEnabled << "  enabled  " << enabled);
 
     if (last_mowerEnabled != enabled)
     {
@@ -254,7 +254,7 @@ void setMowerEnabled(bool enabled) {
 // 停止行走电机
 // FIXME: 什么时候才该调用
 void stopMoving() {
-    ROS_INFO_STREAM("om_mower_logic: stopMoving() - stopping bot movement");
+    // ROS_INFO_STREAM("om_mower_logic: stopMoving() - stopping bot movement");
     geometry_msgs::Twist stop;
     stop.angular.z = 0;
     stop.linear.x = 0;
@@ -263,11 +263,11 @@ void stopMoving() {
 
 // 停止割草电机
 void stopBlade() {
-    ROS_INFO_STREAM("om_mower_logic: stopBlade() - stopping blade motor if running");
+    // ROS_INFO_STREAM("om_mower_logic: stopBlade() - stopping blade motor if running");
     if (last_mowerEnabled) {
         setMowerEnabled(false);
     }
-    ROS_INFO_STREAM("om_mower_logic: stopBlade() - finished");
+    // ROS_INFO_STREAM("om_mower_logic: stopBlade() - finished");
 }
 
 // 遇到紧急情况，需要停止割草电机和行走电机
@@ -347,13 +347,14 @@ void checkSafety(const ros::TimerEvent &timer_event) {
     // check if odometry is current. If not, the GPS was bad so we stop moving.
     // Note that the mowing behavior will pause as well by itself.
     // 如果没有持续更新位姿，说明位姿信息断开，需要停止
-    if (ros::Time::now() - pose_time > ros::Duration(1.0)) {
-        ROS_ERROR_STREAM("33333");
-        stopBlade();
-        stopMoving();
-        ROS_WARN_STREAM_THROTTLE(5, "om_mower_logic: EMERGENCY pose values stopped. dt was: " << (ros::Time::now() - pose_time));
-        return;
-    }
+    // FIXME:
+    // if (ros::Time::now() - pose_time > ros::Duration(1.0)) {
+    //     ROS_ERROR_STREAM("33333");
+    //     stopBlade();
+    //     stopMoving();
+    //     ROS_WARN_STREAM_THROTTLE(5, "om_mower_logic: EMERGENCY pose values stopped. dt was: " << (ros::Time::now() - pose_time));
+    //     return;
+    // }
  
     // check if status is current. if not, we have a problem since it contains wheel ticks and so on.
     // Since these should never drop out, we enter emergency instead of "only" stopping
@@ -366,16 +367,16 @@ void checkSafety(const ros::TimerEvent &timer_event) {
 
     // If the motor controllers error, we enter emergency mode in the hope to save them. They should not error.
     // TODO: 
-    if (last_status.right_esc_status.status <= mower_msgs::ESCStatus::ESC_STATUS_ERROR || last_status.left_esc_status.status <= mower_msgs::ESCStatus ::ESC_STATUS_ERROR) {
-        ROS_ERROR_STREAM("222");
-        setEmergencyMode(true);
-        ROS_ERROR_STREAM(
-                "EMERGENCY: at least one motor control errored. errors left: " 
-                << (last_status.left_esc_status)
-                << ", status right: "
-                << last_status.right_esc_status);
-        return;
-    }
+    // if (last_status.right_esc_status.status <= mower_msgs::ESCStatus::ESC_STATUS_ERROR || last_status.left_esc_status.status <= mower_msgs::ESCStatus ::ESC_STATUS_ERROR) {
+    //     ROS_ERROR_STREAM("222");
+    //     setEmergencyMode(true);
+    //     ROS_ERROR_STREAM(
+    //             "EMERGENCY: at least one motor control errored. errors left: " 
+    //             << (last_status.left_esc_status)
+    //             << ", status right: "
+    //             << last_status.right_esc_status);
+    //     return;
+    // }
 
     // We need orientation and a positional accuracy less than configured
     bool gpsGoodNow = isGpsGood();

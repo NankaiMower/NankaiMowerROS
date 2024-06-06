@@ -47,15 +47,15 @@ COBS cobs;
 
 ros::NodeHandle *n;
 ros::NodeHandle *paramNh;
-ros::NodeHandle *mowerParamNh;
+// ros::NodeHandle *mowerParamNh;
 ros::NodeHandle *leftParamNh;
 ros::NodeHandle *rightParamNh;
 
-// driver::Driver *left_interface;
-// driver::Driver *right_interface;
-xesc_driver::XescDriver *mow_interface;
-xesc_driver::XescDriver *left_interface;
-xesc_driver::XescDriver *right_interface;
+driver::Driver *left_interface;
+driver::Driver *right_interface;
+// xesc_driver::XescDriver *mow_interface;
+// xesc_driver::XescDriver *left_interface;
+// xesc_driver::XescDriver *right_interface;
 
 // True, if ROS thinks there sould be an emergency
 bool emergency_high_level = false;
@@ -70,6 +70,8 @@ bool allow_send = false;
 
 // Current speeds (duty cycle) for the three ESCs
 float speed_l = 0, speed_r = 0, speed_mow = 0;
+
+bool isStop = false;
 
 // Serial port and buffer for the low level connection
 serial::Serial serial_port;
@@ -130,13 +132,36 @@ void publishActuators() {
         speed_mow = 0;
     }
 
-    if(mow_interface) {
-        mow_interface->setDutyCycle(speed_mow);
-    }
+    // if(mow_interface) {
+    //     mow_interface->setDutyCycle(speed_mow);
+    // }
     // We need to invert the speed, because the ESC has the same config as the left one, so the motor is running in the "wrong" direction
+    
+    // if (isStop) {
+    //     if (speed_l == 0.0 && speed_r == 0.0) {
+    //         ROS_INFO_STREAM("0000000000000000");
+    //     } else {
+    //         ROS_INFO_STREAM("1111111111111111" << speed_l << "   " <<< speed_r);
+    //         left_interface->setDutyCycle(speed_l);
+    //         right_interface->setDutyCycle(speed_r);
+    //         isStop = false;
+    //     }
+    // } else {
+    //     if (speed_l == 0.0 && speed_r == 0.0) {
+    //         ROS_INFO_STREAM("222222222222222");
+    //         left_interface->stop();
+    //         right_interface->stop();
+    //         isStop = true;
+    //     } else {
+    //         ROS_INFO_STREAM("333333333333333" << speed_l << "   " <<< speed_r);
+    //         left_interface->setDutyCycle(speed_l);
+    //         right_interface->setDutyCycle(speed_r);
+    //     }
+    // }
+
+
     left_interface->setDutyCycle(speed_l);
-    // right_interface->setDutyCycle(speed_r);
-    right_interface->setDutyCycle(-speed_r);
+    right_interface->setDutyCycle(speed_r);
 
     struct ll_heartbeat heartbeat = {
             .type = PACKET_ID_LL_HEARTBEAT,
@@ -226,13 +251,13 @@ void publishStatus() {
     status_msg.charge_current = last_ll_status.charging_current;
 
     xesc_msgs::XescStateStamped mow_status, right_status, left_status;
-    if(mow_interface) {
-        mow_interface->getStatus(mow_status);
-    } else {
-        mow_status.state.connection_state = xesc_msgs::XescState::XESC_CONNECTION_STATE_DISCONNECTED;
-    }
-    left_interface->getStatus(left_status);
-    right_interface->getStatus(right_status);
+    // if(mow_interface) {
+    //     mow_interface->getStatus(mow_status);
+    // } else {
+    //     mow_status.state.connection_state = xesc_msgs::XescState::XESC_CONNECTION_STATE_DISCONNECTED;
+    // }
+    // left_interface->getStatus(left_status);
+    // right_interface->getStatus(right_status);
 
     convertStatus(mow_status, status_msg.mow_esc_status);
     convertStatus(left_status, status_msg.left_esc_status);
@@ -413,11 +438,11 @@ int main(int argc, char **argv) {
 
     n = new ros::NodeHandle();
     paramNh = new ros::NodeHandle("~");
-    // leftParamNh = new ros::NodeHandle("~/left_driver");
-    // rightParamNh = new ros::NodeHandle("~/right_driver");
-    mowerParamNh = new ros::NodeHandle("~/mower_xesc");
-    leftParamNh = new ros::NodeHandle("~/left_xesc");
-    rightParamNh = new ros::NodeHandle("~/right_xesc");
+    leftParamNh = new ros::NodeHandle("~/left_driver");
+    rightParamNh = new ros::NodeHandle("~/right_driver");
+    // mowerParamNh = new ros::NodeHandle("~/mower_xesc");
+    // leftParamNh = new ros::NodeHandle("~/left_xesc");
+    // rightParamNh = new ros::NodeHandle("~/right_xesc");
     
     highLevelClient = n->serviceClient<mower_msgs::HighLevelControlSrv>("mower_service/high_level_control");
 
@@ -430,17 +455,17 @@ int main(int argc, char **argv) {
     speed_l = speed_r = speed_mow = 0;
 
     // Setup XESC interfaces
-    if(mowerParamNh->hasParam("xesc_type")) {
-        mow_interface = new xesc_driver::XescDriver(*n, *mowerParamNh);
-    } else {
-        mow_interface = nullptr;
-    }
+    // if(mowerParamNh->hasParam("xesc_type")) {
+    //     mow_interface = new xesc_driver::XescDriver(*n, *mowerParamNh);
+    // } else {
+    //     mow_interface = nullptr;
+    // }
 
-    // left_interface = new driver::Driver(*n, *leftParamNh);
-    // right_interface = new driver::Driver(*n, *rightParamNh);
-    left_interface = new xesc_driver::XescDriver(*n, *leftParamNh);
-    right_interface = new xesc_driver::XescDriver(*n, *rightParamNh);
-    // sleep(1);
+    left_interface = new driver::Driver(*n, *leftParamNh);
+    right_interface = new driver::Driver(*n, *rightParamNh);
+    // left_interface = new xesc_driver::XescDriver(*n, *leftParamNh);
+    // right_interface = new xesc_driver::XescDriver(*n, *rightParamNh);
+    sleep(1);
 
     status_pub = n->advertise<mower_msgs::Status>("mower/status", 1);
     wheel_tick_pub = n->advertise<xbot_msgs::WheelTick>("mower/wheel_ticks", 1);
@@ -562,10 +587,10 @@ int main(int argc, char **argv) {
 
     spinner.stop();
 
-    if(mow_interface) {
-        mow_interface->setDutyCycle(0.0);
-        mow_interface->stop();
-    }
+    // if(mow_interface) {
+    //     mow_interface->setDutyCycle(0.0);
+    //     mow_interface->stop();
+    // }
     left_interface->setDutyCycle(0.0);
     right_interface->setDutyCycle(0.0);
     sleep(1);
@@ -573,9 +598,9 @@ int main(int argc, char **argv) {
     right_interface->stop();
     sleep(1);
 
-    if(mow_interface) {
-        delete mow_interface;
-    }
+    // if(mow_interface) {
+    //     delete mow_interface;
+    // }
     delete left_interface;
 
     delete right_interface;
