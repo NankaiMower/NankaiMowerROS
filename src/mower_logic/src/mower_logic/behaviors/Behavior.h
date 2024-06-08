@@ -141,12 +141,6 @@ public:
     // return true to redirect joystick speeds to the controller
     virtual bool redirect_joystick() = 0;
 
-
-    virtual void command_home() = 0;
-    virtual void command_start() = 0;
-    virtual void command_s1() = 0;
-    virtual void command_s2() = 0;
-
     virtual uint8_t get_sub_state() = 0;
     virtual uint8_t get_state() = 0;
 

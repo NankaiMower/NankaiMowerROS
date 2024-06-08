@@ -29,7 +29,6 @@
 #include "mower_msgs/MowerControlSrv.h"
 #include "mower_msgs/EmergencyStopSrv.h"
 #include "mower_msgs/ImuRaw.h"
-#include "mower_msgs/HighLevelControlSrv.h"
 #include "sensor_msgs/Imu.h"
 #include "sensor_msgs/MagneticField.h"
 
@@ -86,11 +85,10 @@ struct ll_status last_ll_status = {0};
 // sensor_msgs::MagneticField sensor_mag_msg;
 // sensor_msgs::Imu sensor_imu_msg;
 
-ros::ServiceClient highLevelClient;
 
 #define WHEEL_DISTANCE_M 0.325
 
-// FIXME: 
+// 高层信息和底层信息有一个有问题,就报警
 bool is_emergency() {
     // return false;
     // ROS_INFO_STREAM("emergency_high_level " << emergency_high_level);
@@ -257,6 +255,10 @@ void publishActuatorsTimerTask(const ros::TimerEvent &timer_event) {
     publishStatus();
 }
 
+// 接收发送来的请求割草电机启动的请求
+// 如果请求割草并且当前不是紧急情况
+// 那么割草机速度直接设置为1
+// 其他情况速度设置为0
 bool setMowEnabled(mower_msgs::MowerControlSrvRequest &req, mower_msgs::MowerControlSrvResponse &res) {
     if (req.mow_enabled && !is_emergency()) {
         speed_mow = 1;
@@ -322,95 +324,15 @@ void velReceived(const geometry_msgs::Twist::ConstPtr &msg) {
         speed_r = -1.0;
     }
 }
-
-void handleLowLevelUIEvent(struct ll_ui_event *ui_event) {
-    ROS_INFO_STREAM("Got UI button with code:" << ui_event->button_id << " and duration: " << ui_event->press_duration);
-
-    mower_msgs::HighLevelControlSrv srv;
-
-    switch(ui_event->button_id) {
-        case 2:
-            // Home
-            srv.request.command = mower_msgs::HighLevelControlSrvRequest::COMMAND_HOME;
-            break;
-        case 3:
-            // Play
-            srv.request.command = mower_msgs::HighLevelControlSrvRequest::COMMAND_START;
-            break;
-        case 4:
-            // S1
-            srv.request.command = mower_msgs::HighLevelControlSrvRequest::COMMAND_S1;
-            break;
-        case 5:
-            // S2
-            if(ui_event->press_duration == 2) {
-                srv.request.command = mower_msgs::HighLevelControlSrvRequest::COMMAND_DELETE_MAPS;
-            } else {
-                srv.request.command = mower_msgs::HighLevelControlSrvRequest::COMMAND_S2;
-            }
-            break;
-        case 6:
-            //LOCK
-            if(ui_event->press_duration == 2) {
-                // very long press on lock
-                srv.request.command = mower_msgs::HighLevelControlSrvRequest::COMMAND_RESET_EMERGENCY;
-            }
-        default:
-            // Return, don't call the service.
-            return;
-    }
-
-    if(!highLevelClient.call(srv)) {
-        ROS_ERROR_STREAM("Error calling high level control service");
-    }
-
-}
-
 void handleLowLevelStatus(struct ll_status *status) {
     std::unique_lock<std::mutex> lk(ll_status_mutex);
     last_ll_status = *status;
 }
 
-// void handleLowLevelIMU(struct ll_imu *imu) {
-//     mower_msgs::ImuRaw imu_msg;
-
-//     imu_msg.dt = imu->dt_millis;
-//     imu_msg.ax = imu->acceleration_mss[0];
-//     imu_msg.ay = imu->acceleration_mss[1];
-//     imu_msg.az = imu->acceleration_mss[2];
-//     imu_msg.gx = imu->gyro_rads[0];
-//     imu_msg.gy = imu->gyro_rads[1];
-//     imu_msg.gz = imu->gyro_rads[2];
-//     imu_msg.mx = imu->mag_uT[0];
-//     imu_msg.my = imu->mag_uT[1];
-//     imu_msg.mz = imu->mag_uT[2];
-
-//     sensor_mag_msg.header.stamp = ros::Time::now();
-//     sensor_mag_msg.header.seq++;
-//     sensor_mag_msg.header.frame_id = "base_link";
-
-//     sensor_mag_msg.magnetic_field.x = imu_msg.mx/1000.0;
-//     sensor_mag_msg.magnetic_field.y = imu_msg.my/1000.0;
-//     sensor_mag_msg.magnetic_field.z = imu_msg.mz/1000.0;
-
-//     sensor_imu_msg.header.stamp = ros::Time::now();
-//     sensor_imu_msg.header.seq++;
-//     sensor_imu_msg.header.frame_id = "base_link";
-
-//     sensor_imu_msg.linear_acceleration.x = imu_msg.ax;
-//     sensor_imu_msg.linear_acceleration.y = imu_msg.ay;
-//     sensor_imu_msg.linear_acceleration.z = imu_msg.az;
-//     sensor_imu_msg.angular_velocity.x = imu_msg.gx;
-//     sensor_imu_msg.angular_velocity.y = imu_msg.gy;
-//     sensor_imu_msg.angular_velocity.z = imu_msg.gz;
- 
-//     sensor_imu_pub.publish(sensor_imu_msg);
-//     sensor_mag_pub.publish(sensor_mag_msg);
-// }
-
 int main(int argc, char **argv) {
     ros::init(argc, argv, "mower_comms");
 
+    // 通信节点建立
     n = new ros::NodeHandle();
     paramNh = new ros::NodeHandle("~");
     // leftParamNh = new ros::NodeHandle("~/left_driver");
@@ -419,8 +341,6 @@ int main(int argc, char **argv) {
     leftParamNh = new ros::NodeHandle("~/left_xesc");
     rightParamNh = new ros::NodeHandle("~/right_xesc");
     
-    highLevelClient = n->serviceClient<mower_msgs::HighLevelControlSrv>("mower_service/high_level_control");
-
     std::string ll_serial_port_name;
     if (!paramNh->getParam("ll_serial_port", ll_serial_port_name)) {
         ROS_ERROR_STREAM("Error getting low level serial port parameter. Quitting.");
@@ -525,24 +445,6 @@ int main(int argc, char **argv) {
                                             "Low Level Board sent a valid packet with the wrong size. Type was STATUS");
                                 }
                                 break;
-                            case PACKET_ID_LL_IMU:
-                                // ROS_INFO_STREAM("PACKET_ID_LL_UI_EVENT");
-                                // if (data_size == sizeof(struct ll_imu)) {
-                                //     handleLowLevelIMU((struct ll_imu *) buffer_decoded);
-                                // } else {
-                                //     ROS_INFO_STREAM(
-                                //             "Low Level Board sent a valid packet with the wrong size. Type was IMU");
-                                // }
-                                break;
-                            case PACKET_ID_LL_UI_EVENT:
-                                ROS_INFO_STREAM("PACKET_ID_LL_UI_EVENT");
-                                // if(data_size == sizeof(struct ll_ui_event)) {
-                                //     handleLowLevelUIEvent((struct ll_ui_event*) buffer_decoded);
-                                // } else {
-                                //     ROS_INFO_STREAM(
-                                //             "Low Level Board sent a valid packet with the wrong size. Type was UI_EVENT");
-                                // }
-                                break;
                             default:
                                 ROS_INFO_STREAM("Got unknown packet from Low Level Board");
                                 break;
@@ -588,4 +490,7 @@ rostopic echo /cmd_vel
 rostopic echo /mower_logic/current_state
 rostopic echo /mower/status
 rostopic echo /mower/wheel_ticks
+
+可以用此进行方向控制
+rosrun teleop_twist_keyboard teleop_twist_keyboard.py
 */

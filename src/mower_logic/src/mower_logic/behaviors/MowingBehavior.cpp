@@ -43,6 +43,7 @@ std::string MowingBehavior::state_name() {
 Behavior *MowingBehavior::execute() {
 
     while (ros::ok() && !aborted) {
+        // 如果当前割草路径为空, 并且为当前区域创建割草计划失败, 说明不能正常执行割草计划, 重置, 进入回舱状态
         if (currentMowingPaths.empty() && !create_mowing_plan(last_config.current_area)) {
             ROS_INFO_STREAM("MowingBehavior: Could not create mowing plan, docking");
             // Start again from first area next time.
@@ -51,7 +52,7 @@ Behavior *MowingBehavior::execute() {
             return &DockingBehavior::INSTANCE;
         }
 
-        // We have a plan, execute it
+        // 执行 currentMowingPaths 中的计划
         ROS_INFO_STREAM("MowingBehavior: Executing mowing plan");
         bool finished = execute_mowing_plan();
         if (finished) {
@@ -113,12 +114,14 @@ void MowingBehavior::update_actions() {
     registerActions("mower_logic:mowing", actions);
 }
 
+// 创建对区域 area_index 创建割草计划
 bool MowingBehavior::create_mowing_plan(int area_index) {
     ROS_INFO_STREAM("MowingBehavior: Creating mowing plan for area: " << area_index);
-    // Delete old plan and progress.
+    
+    // 创建新计划, 需要清空之前的路径规划
     currentMowingPaths.clear();
 
-    // get the mowing area
+    // 获取需要割草的区域
     mower_map::GetMowingAreaSrv mapSrv;
     mapSrv.request.index = area_index;
     if (!mapClient.call(mapSrv)) {
@@ -126,7 +129,8 @@ bool MowingBehavior::create_mowing_plan(int area_index) {
         return false;
     }
 
-    // Area orientation is the same as the first point
+    // 计算起始角度
+    // 这个角度计算的是第一个点与后续点位中第一个距离大于2的点的角度
     double angle = 0;
     auto points = mapSrv.response.area.area.points;
     if (points.size() >= 2) {
@@ -143,8 +147,7 @@ bool MowingBehavior::create_mowing_plan(int area_index) {
         }
     }
 
-
-    // calculate coverage
+    // 引入路径覆盖算法
     slic3r_coverage_planner::PlanPath pathSrv;
     pathSrv.request.angle = angle;
     pathSrv.request.outline_count = config.outline_count;
@@ -396,30 +399,6 @@ bool MowingBehavior::execute_mowing_plan() {
 
     // true, if we have executed all paths
     return currentMowingPaths.empty();
-}
-
-void MowingBehavior::command_home() {
-    if (paused)
-    {
-        // Request continue to wait for odom
-        this->requestContinue();
-        // Then instantly abort i.e. go to dock.
-    }
-    this->abort();
-}
-
-void MowingBehavior::command_start() {
-    ROS_INFO_STREAM("MowingBehavior: MANUAL CONTINUE");
-    this->requestContinue();
-}
-
-void MowingBehavior::command_s1() {
-    ROS_INFO_STREAM("MowingBehavior: MANUAL PAUSED");
-    this->requestPause();
-}
-
-void MowingBehavior::command_s2() {
-    skip_area = true;
 }
 
 bool MowingBehavior::redirect_joystick() {

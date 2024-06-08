@@ -33,6 +33,7 @@ namespace xbot {
                     log("no baudrate set, can't start", ERROR);
                     return false;
                 }
+                
                 if (port_.empty()) {
                     log("no serial port set, can't start", ERROR);
                     return false;

@@ -504,6 +504,7 @@ bool addMowingArea(mower_map::AddMowingAreaSrvRequest &req, mower_map::AddMowing
     return true;
 }
 
+// 获取 mowing_areas 的第 index 个区域
 bool getMowingArea(mower_map::GetMowingAreaSrvRequest &req, mower_map::GetMowingAreaSrvResponse &res) {
     ROS_INFO_STREAM("Got getMowingArea call with index: " << req.index);
 
@@ -518,8 +519,7 @@ bool getMowingArea(mower_map::GetMowingAreaSrvRequest &req, mower_map::GetMowing
 }
 
 
-bool
-deleteMowingArea(mower_map::DeleteMowingAreaSrvRequest &req, mower_map::DeleteMowingAreaSrvResponse &res) {
+bool deleteMowingArea(mower_map::DeleteMowingAreaSrvRequest &req, mower_map::DeleteMowingAreaSrvResponse &res) {
     ROS_INFO_STREAM("Got delete mowing area call with index: " << req.index);
 
     if (req.index >= mowing_areas.size()) {
@@ -535,8 +535,7 @@ deleteMowingArea(mower_map::DeleteMowingAreaSrvRequest &req, mower_map::DeleteMo
     return true;
 }
 
-bool
-convertToNavigationArea(mower_map::ConvertToNavigationAreaSrvRequest &req,
+bool convertToNavigationArea(mower_map::ConvertToNavigationAreaSrvRequest &req,
                         mower_map::ConvertToNavigationAreaSrvResponse &res) {
     ROS_INFO_STREAM("Got convert to nav area call with index: " << req.index);
 

@@ -124,21 +124,6 @@ bool IdleBehavior::mower_enabled() {
     return false;
 }
 
-void IdleBehavior::command_home() {
-    // IdleBehavior == docked, don't do anything.
-}
-
-void IdleBehavior::command_start() {
-    manual_start_mowing = true;
-}
-
-void IdleBehavior::command_s1() {
-    start_area_recorder = true;
-}
-
-void IdleBehavior::command_s2() {
-    
-}
 
 bool IdleBehavior::redirect_joystick() {
     return false;

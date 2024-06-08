@@ -18,8 +18,6 @@
 
 extern ros::ServiceClient dockingPointClient;
 extern ros::ServiceClient emergencyClient;
-extern actionlib::SimpleActionClient<mbf_msgs::MoveBaseAction> *mbfClient;
-extern actionlib::SimpleActionClient<mbf_msgs::ExePathAction> *mbfClientExePath;
 extern mower_msgs::Status last_status;
 extern ros::NodeHandle *n;
 extern void registerActions(std::string prefix, const std::vector<xbot_msgs::ActionInfo> &actions);
@@ -493,22 +491,6 @@ bool AreaRecordingBehavior::getDockingPosition(geometry_msgs::Pose &pos) {
         update_actions();
         return true;
     }
-}
-
-void AreaRecordingBehavior::command_home() {
-    abort();
-}
-
-void AreaRecordingBehavior::command_start() {
-
-}
-
-void AreaRecordingBehavior::command_s1() {
-
-}
-
-void AreaRecordingBehavior::command_s2() {
-
 }
 
 bool AreaRecordingBehavior::redirect_joystick() {

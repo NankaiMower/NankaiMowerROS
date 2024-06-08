@@ -39,7 +39,6 @@
 #include "behaviors/Behavior.h"
 #include "behaviors/IdleBehavior.h"
 #include "behaviors/AreaRecordingBehavior.h"
-#include "mower_msgs/HighLevelControlSrv.h"
 #include "std_msgs/String.h"
 #include "mower_msgs/HighLevelStatus.h"
 #include "mower_map/ClearMapSrv.h"
@@ -96,8 +95,6 @@ void abortExecution();
 
 void updateUI(const ros::TimerEvent &timer_event);
 void checkSafety(const ros::TimerEvent &timer_event);
-
-bool highLevelCommand(mower_msgs::HighLevelControlSrvRequest &req, mower_msgs::HighLevelControlSrvResponse &res);
 
 // 注册行为
 void registerActions(std::string prefix, const std::vector<xbot_msgs::ActionInfo> &actions) {
@@ -446,56 +443,6 @@ void reconfigureCB(mower_logic::MowerLogicConfig &c, uint32_t level) {
     last_config = c;
 }
 
-bool highLevelCommand(mower_msgs::HighLevelControlSrvRequest &req, mower_msgs::HighLevelControlSrvResponse &res) {
-    switch(req.command) {
-        case mower_msgs::HighLevelControlSrvRequest::COMMAND_HOME:
-	        ROS_INFO_STREAM("COMMAND_HOME");
-            if(currentBehavior) {
-                currentBehavior->command_home();
-            }
-            break;
-        case mower_msgs::HighLevelControlSrvRequest::COMMAND_START:
-		    ROS_INFO_STREAM("COMMAND_START");
-            if(currentBehavior) {
-                currentBehavior->command_start();
-            }
-            break;
-        case mower_msgs::HighLevelControlSrvRequest::COMMAND_S1:
-		    ROS_INFO_STREAM("COMMAND_S1");
-            if(currentBehavior) {
-                currentBehavior->command_s1();
-            }
-            break;
-        case mower_msgs::HighLevelControlSrvRequest::COMMAND_S2:
-	        ROS_INFO_STREAM("COMMAND_S2"); 
-            if(currentBehavior) {
-                currentBehavior->command_s2();
-            }
-            break;
-        case mower_msgs::HighLevelControlSrvRequest::COMMAND_DELETE_MAPS: {
-            ROS_WARN_STREAM("COMMAND_DELETE_MAPS");
-            if (currentBehavior != &AreaRecordingBehavior::INSTANCE && currentBehavior != &IdleBehavior::INSTANCE &&
-                currentBehavior !=
-                nullptr) {
-                ROS_ERROR_STREAM("Deleting maps is only allowed during IDLE or AreaRecording!");
-                return true;
-            }
-            mower_map::ClearMapSrv clear_map_srv;
-            // TODO check result
-            clearMapClient.call(clear_map_srv);
-
-            // Abort the current behavior. Idle will refresh and go to AreaRecorder, AreaRecorder will to to Idle wich will go to a fresh AreaRecorder
-            currentBehavior->abort();
-        }
-            break;
-        case mower_msgs::HighLevelControlSrvRequest::COMMAND_RESET_EMERGENCY:
-            ROS_WARN_STREAM("COMMAND_RESET_EMERGENCY");
-            setEmergencyMode(false);
-            break;
-    }
-    return true;
-}
-
 // 对接受的action进行处理
 void actionReceived(const std_msgs::String::ConstPtr &action) {
     if(currentBehavior) {
@@ -570,9 +517,6 @@ int main(int argc, char **argv) {
     ros::Subscriber pose_sub = n->subscribe("/xbot_positioning/xb_pose", 0, poseReceived, ros::TransportHints().tcpNoDelay(true));
     ros::Subscriber joy_cmd = n->subscribe("/joy_vel", 0, joyVelReceived, ros::TransportHints().tcpNoDelay(true));
     ros::Subscriber action = n->subscribe("/xbot/action", 0, actionReceived, ros::TransportHints().tcpNoDelay(true));
-
-    // 订阅服务处理（高级控制服务）
-    ros::ServiceServer high_level_control_srv = n->advertiseService("mower_service/high_level_control", highLevelCommand);
 
     // 开启两个异步线程
     ros::AsyncSpinner asyncSpinner(2);
