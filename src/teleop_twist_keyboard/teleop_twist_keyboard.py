@@ -81,7 +81,7 @@ speedBindings={
 class PublishThread(threading.Thread):
     def __init__(self, rate):
         super(PublishThread, self).__init__()
-        self.publisher = rospy.Publisher('cmd_vel', TwistMsg, queue_size = 1)
+        self.publisher = rospy.Publisher('key_vel', TwistMsg, queue_size = 1)
         self.x = 0.0
         self.y = 0.0
         self.z = 0.0

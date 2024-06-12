@@ -1,0 +1,43 @@
+<launch>
+    <include file="/opt/open_mower_ros/src/mower_test/launch/004_gps.launch" />
+    <include file="/opt/open_mower_ros/src/mower_test/launch/005_comm.launch" />
+
+    <node pkg="xbot_positioning" type="xbot_positioning" name="xbot_positioning" output="screen" required="true">
+        <remap from="~imu_in" to="/imu/data_raw"/>
+        <remap from="~wheel_ticks_in" to="/mower/wheel_ticks"/>
+        <remap from="~xb_pose_in" to="xbot_driver_gps/xb_pose"/>
+        <remap from="~xb_pose_out" to="xbot_positioning/xb_pose"/>
+        <param name="max_gps_accuracy" value="0.2"/>
+    </node>
+
+    <node pkg="mower_map" type="mower_map_service" name="map_service" output="screen"/>
+
+    <node pkg="twist_mux" type="twist_mux" name="twist_mux" output="screen">
+        <remap from="cmd_vel_out" to="/cmd_vel"/>
+        <rosparam file="/opt/open_mower_ros/src/mower_params/cmd/twist_mux_topics.yaml"  command="load"/>
+    </node>
+
+    <node pkg="mower_logic" type="mower_logic" name="mower_logic" output="screen">
+        <param name="automatic_start"       value="false"/>
+        <param name="docking_distance"      value="1.0"/>
+        <param name="undock_distance"       value="1.0"/>
+        <!-- 0.13 works well for the Classic 500. -->
+        <param name="tool_width"            value="0.13"/>
+        <param name="enable_mower"          value="true"/>
+        <param name="battery_empty_voltage" value="20.0"/>
+        <!-- How many outlines should the mover drive. It's not recommended to set this below 4. -->
+        <param name="outline_count"         value="2"/>
+        <param name="outline_offset"        value="0.05"/>
+        <param name="battery_full_voltage"  value="24.0"/>
+    </node>
+
+    <node pkg="xbot_remote" type="xbot_remote" name="xbot_remote" output="screen" respawn="true" respawn_delay="10">
+        <remap from="/xbot_remote/cmd_vel" to="/joy_vel"/>
+    </node>
+
+    <node pkg="xbot_monitoring" type="xbot_monitoring" name="xbot_monitoring" output="screen" respawn="true" respawn_delay="10">
+        <remap from="/xbot_monitoring/remote_cmd_vel" to="/joy_vel"/>
+    </node>
+
+    <node pkg="mower_logic" type="monitoring" name="monitoring" output="screen" respawn="true" respawn_delay="10"/>
+</launch>

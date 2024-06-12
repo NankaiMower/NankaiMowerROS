@@ -1,7 +1,11 @@
-obstacle_range: 3.0
-raytrace_range: 4.0
+# 更新以机器人为中心，按此数值为半径内的障碍物信息
+obstacle_range: 10.0
+
+# 更新以机器人为中心，按此数值为半径内的自由空间
+raytrace_range: 10.0
+
+# 机器人的占用面积
 #footprint: [[x0, y0], [x1, y1], ... [xn, yn]]
+
+# 机器人的占用面积为圆形，半径
 robot_radius: 0.0
-
-max_obstacle_height: 1.0
-

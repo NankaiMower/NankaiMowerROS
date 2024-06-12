@@ -2,6 +2,14 @@
     <include file="/opt/open_mower_ros/src/mower_test/launch/006_localization.launch" />
     <include file="/opt/open_mower_ros/src/mower_test/launch/007_map.launch" />
     <include file="/opt/open_mower_ros/src/mower_test/launch/008_move_base.launch" />
+
+    <!-- <node pkg="mower_sensor" type="chaosheng.py" name="chaosheng" output="screen"/> -->
+
+    <node pkg="twist_mux" type="twist_mux" name="twist_mux" output="screen">
+        <remap from="cmd_vel_out" to="/cmd_vel"/>
+        <rosparam file="/opt/open_mower_ros/src/mower_params/cmd/twist_mux_topics.yaml"  command="load"/>
+    </node>
+    
 </launch>
 
-<!-- 导航相关 -->
+<!-- 导航控制相关 -->

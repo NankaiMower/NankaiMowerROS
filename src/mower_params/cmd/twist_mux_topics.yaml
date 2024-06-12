@@ -19,3 +19,13 @@ topics:
     topic   : logic_vel
     timeout : 0.5
     priority: 100
+  # -
+  #   name    : key
+  #   topic   : key_vel
+  #   timeout : 0.5
+  #   priority: 100
+  -
+    name    : obstacle
+    topic   : obstacle_vel
+    timeout : 0.5
+    priority: 200
