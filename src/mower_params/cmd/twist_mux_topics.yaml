@@ -5,7 +5,6 @@
 # - timeout : timeout in seconds to start discarding old messages, and use 0.0 speed instead
 # - priority: priority in the range [0, 255]; the higher the more priority over other topics
 
-# nav_vel   in 008_move_base (is was remapped from cmd_vel in mbf_costmap_nav/mbf_costmap_nav)
 # logic_vel in mower_logic (advertise<geometry_msgs::Twist> in mower_logic/mower_logic)
 
 topics:
@@ -19,11 +18,11 @@ topics:
     topic   : logic_vel
     timeout : 0.5
     priority: 100
-  # -
-  #   name    : key
-  #   topic   : key_vel
-  #   timeout : 0.5
-  #   priority: 100
+  -
+    name    : key
+    topic   : key_vel
+    timeout : 0.5
+    priority: 150
   -
     name    : obstacle
     topic   : obstacle_vel
