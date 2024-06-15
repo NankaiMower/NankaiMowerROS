@@ -29,36 +29,12 @@ driver::Driver::~Driver() {
 
 void driver::Driver::setDutyCycle(float speed) {
     speed = speed * 3000; 
-
     mower_driver::SetDuty set_duty_srv;
-    if (node_name == "/mower_comms/left_driver") {
-        speed = -speed;
-    }
-    ROS_INFO("Current node name is: %s", node_name.c_str());
-    ROS_INFO_STREAM("speed" << speed);
+    // ROS_INFO("Current node name is: %s", node_name.c_str());
+    // ROS_INFO_STREAM("speed" << speed);
     set_duty_srv.request.duty = speed;
     setDutyClient.call(set_duty_srv);
 }
-
-// void driver::Driver::getStatus(xesc_msgs::XescStateStamped &state_msg) {
-//     // 因为python获取的信息和c++不能直接用，但是通信格式都是XescStateStamped
-//     // 转发一下结果到这里即可
-//     // 在这里订阅和赋值信息即可
-//     // TODO:
-//     state_msg.header.stamp            = ros::Time::now();
-//     // state_msg.state.connection_state  = vesc_status.connection_state;
-//     // state_msg.state.fw_major          = vesc_status.fw_version_major;
-//     // state_msg.state.fw_minor          = vesc_status.fw_version_minor;
-//     state_msg.state.voltage_input     = vesc_status.voltage_input;
-//     state_msg.state.temperature_pcb   = vesc_status.temperature_pcb;
-//     state_msg.state.temperature_motor = vesc_status.temperature_motor;
-//     state_msg.state.current_input     = vesc_status.current_input;
-//     state_msg.state.duty_cycle        = vesc_status.duty_cycle;
-//     state_msg.state.tacho             = vesc_status.tacho;
-//     state_msg.state.fault_code        = vesc_status.fault_code;
-//     state_msg.state.tacho_absolute    = vesc_status.tacho_absolute;
-//     state_msg.state.direction         = vesc_status.direction;
-// }
 
 void driver::Driver::stop() {
     std_srvs::Empty emptySrv;

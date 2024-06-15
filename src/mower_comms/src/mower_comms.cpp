@@ -56,6 +56,8 @@ driver::Driver *right_interface;
 // xesc_driver::XescDriver *left_interface;
 // xesc_driver::XescDriver *right_interface;
 
+xesc_msgs::XescStateStamped mow_status, right_status, left_status;
+
 bool isStop = false;
 
 // True, if ROS thinks there sould be an emergency
@@ -143,7 +145,7 @@ void publishActuators() {
             // ROS_INFO_STREAM("0000000000000000");
         } else {
             // ROS_INFO_STREAM("1111111111111111" << speed_l << "   " << speed_r);
-            left_interface->setDutyCycle(speed_l);
+            left_interface->setDutyCycle(-speed_l);
             right_interface->setDutyCycle(speed_r);
             isStop = false;
         }
@@ -161,7 +163,7 @@ void publishActuators() {
             isStop = true;
         } else {
             // ROS_INFO_STREAM("333333333333333" << speed_l << "   " << speed_r);
-            left_interface->setDutyCycle(speed_l);
+            left_interface->setDutyCycle(-speed_l);
             right_interface->setDutyCycle(speed_r);
         }
     }
@@ -253,7 +255,9 @@ void publishStatus() {
     status_msg.v_charge = last_ll_status.v_charge;
     status_msg.charge_current = last_ll_status.charging_current;
 
-    xesc_msgs::XescStateStamped mow_status, right_status, left_status;
+
+    // 以前这样获取，现在直接订阅获取
+    // xesc_msgs::XescStateStamped mow_status, right_status, left_status;
     // if(mow_interface) {
     //     mow_interface->getStatus(mow_status);
     // } else {
@@ -273,9 +277,9 @@ void publishStatus() {
     wheel_tick_msg.wheel_tick_factor = 0;
     wheel_tick_msg.stamp = status_msg.stamp;
     wheel_tick_msg.wheel_ticks_rl = left_status.state.tacho_absolute;
-    wheel_tick_msg.wheel_direction_rl = left_status.state.direction && abs(left_status.state.duty_cycle) > 0;
+    wheel_tick_msg.wheel_direction_rl = !left_status.state.direction && abs(left_status.state.duty_cycle) > 0;
     wheel_tick_msg.wheel_ticks_rr = right_status.state.tacho_absolute;
-    wheel_tick_msg.wheel_direction_rr = !right_status.state.direction && abs(right_status.state.duty_cycle) > 0;
+    wheel_tick_msg.wheel_direction_rr = right_status.state.direction && abs(right_status.state.duty_cycle) > 0;
 
     wheel_tick_pub.publish(wheel_tick_msg);
 }
@@ -354,9 +358,18 @@ void velReceived(const geometry_msgs::Twist::ConstPtr &msg) {
         speed_r = -1.0;
     }
 }
+
 void handleLowLevelStatus(struct ll_status *status) {
     std::unique_lock<std::mutex> lk(ll_status_mutex);
     last_ll_status = *status;
+}
+
+void driverMessageCallback_left(const xesc_msgs::XescStateStamped::ConstPtr& msg) {
+    left_status = *msg;
+}
+
+void driverMessageCallback_right(const xesc_msgs::XescStateStamped::ConstPtr& msg) {
+    right_status = *msg;
 }
 
 int main(int argc, char **argv) {
@@ -391,6 +404,9 @@ int main(int argc, char **argv) {
     // left_interface = new xesc_driver::XescDriver(*n, *leftParamNh);
     // right_interface = new xesc_driver::XescDriver(*n, *rightParamNh);
     sleep(1);
+
+    ros::Subscriber getInfo_left  = n->subscribe("nankai_driver/left", 10, driverMessageCallback_left);
+    ros::Subscriber getInfo_right = n->subscribe("nankai_driver/right", 10, driverMessageCallback_right);
 
     status_pub = n->advertise<mower_msgs::Status>("mower/status", 1);
     wheel_tick_pub = n->advertise<xbot_msgs::WheelTick>("mower/wheel_ticks", 1);

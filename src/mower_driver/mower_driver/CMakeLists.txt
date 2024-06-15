@@ -181,6 +181,7 @@ generate_messages(DEPENDENCIES std_msgs)
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   scripts/mower_driver_command.py
+  scripts/demo.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 

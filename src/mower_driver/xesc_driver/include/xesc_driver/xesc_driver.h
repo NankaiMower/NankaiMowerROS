@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+#include "xesc_msgs/XescStateStamped.h"
 
 namespace driver {
     class Driver {
@@ -8,7 +9,6 @@ namespace driver {
 
         void setDutyCycle(float speed);
         void stop();
-        // void getStatus(xesc_msgs::XescStateStamped& status);
 
     private:
         ros::NodeHandle nh;
