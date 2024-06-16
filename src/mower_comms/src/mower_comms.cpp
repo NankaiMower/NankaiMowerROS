@@ -71,6 +71,10 @@ bool ll_clear_emergency = false;
 // True, if we can send to the low level board
 bool allow_send = false;
 
+// Ticks / m and wheel distance for this robot
+double wheel_ticks_per_m = 0.0;
+double wheel_distance_m = 0.0;
+
 // Current speeds (duty cycle) for the three ESCs
 float speed_l = 0, speed_r = 0, speed_mow = 0;
 
@@ -90,7 +94,7 @@ struct ll_status last_ll_status = {0};
 // sensor_msgs::Imu sensor_imu_msg;
 
 
-#define WHEEL_DISTANCE_M 0.325
+// #define WHEEL_DISTANCE_M 0.325
 
 // 高层信息和底层信息有一个有问题,就报警
 bool is_emergency() {
@@ -273,8 +277,7 @@ void publishStatus() {
     status_pub.publish(status_msg);
 
     xbot_msgs::WheelTick wheel_tick_msg;
-    // TODO: set this correctly!
-    wheel_tick_msg.wheel_tick_factor = 0;
+    wheel_tick_msg.wheel_tick_factor = static_cast<unsigned int>(wheel_ticks_per_m);
     wheel_tick_msg.stamp = status_msg.stamp;
     wheel_tick_msg.wheel_ticks_rl = left_status.state.tacho_absolute;
     wheel_tick_msg.wheel_direction_rl = !left_status.state.direction && abs(left_status.state.duty_cycle) > 0;
@@ -344,8 +347,8 @@ void highLevelStatusReceived(const mower_msgs::HighLevelStatus::ConstPtr &msg) {
 void velReceived(const geometry_msgs::Twist::ConstPtr &msg) {
     // TODO: update this to rad/s values and implement xESC speed control
     last_cmd_vel = ros::Time::now();
-    speed_l = msg->linear.x - 0.5*WHEEL_DISTANCE_M*msg->angular.z;
-    speed_r = msg->linear.x + 0.5*WHEEL_DISTANCE_M*msg->angular.z;
+    speed_l = msg->linear.x - 0.5*wheel_distance_m*msg->angular.z;
+    speed_r = msg->linear.x + 0.5*wheel_distance_m*msg->angular.z;
 
     if (speed_l >= 1.0) {
         speed_l = 1.0;
@@ -389,6 +392,12 @@ int main(int argc, char **argv) {
         ROS_ERROR_STREAM("Error getting low level serial port parameter. Quitting.");
         return 1;
     }
+
+    paramNh->getParam("wheel_ticks_per_m", wheel_ticks_per_m);
+    paramNh->getParam("wheel_distance_m", wheel_distance_m);
+
+    ROS_INFO_STREAM("Wheel ticks [1/m]: " << wheel_ticks_per_m);
+    ROS_INFO_STREAM("Wheel distance [m]: " << wheel_distance_m);
 
     speed_l = speed_r = speed_mow = 0;
 

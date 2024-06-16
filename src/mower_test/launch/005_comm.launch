@@ -4,6 +4,10 @@
     <node pkg="mower_comms" type="mower_comms" name="mower_comms" output="screen">
         <rosparam file="/opt/open_mower_ros/src/mower_params/comms_general_params.yaml"/>
         <rosparam file="/opt/open_mower_ros/src/mower_params/comms_xesc_mini_params.yaml"/>
+        <!-- 计算前行距离 -->
+        <param name="wheel_ticks_per_m" value="1600.0"/>
+        <!-- 轮距，和旋转时的转速差有关系 -->
+        <param name="wheel_distance_m" value="0.325"/>
     </node>
 </launch>
 
