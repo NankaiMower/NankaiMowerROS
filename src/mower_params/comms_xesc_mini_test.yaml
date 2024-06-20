@@ -4,3 +4,5 @@ a_driver:
   serial_port: "/dev/ttyAMA4"
   # right
   # serial_port: "/dev/ttyAMA2"
+  # middle
+  # serial_port: "/dev/ttyAMA3"

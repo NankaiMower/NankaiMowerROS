@@ -33,6 +33,7 @@
 #include "sensor_msgs/MagneticField.h"
 
 #include <xesc_driver/xesc_driver.h>
+#include <xesc_driver_old/xesc_driver_old.h>
 #include <xesc_msgs/XescStateStamped.h>
 #include <xbot_msgs/WheelTick.h>
 #include "mower_msgs/HighLevelStatus.h"

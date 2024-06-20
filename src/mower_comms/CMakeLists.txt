@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   serial
         xesc_driver
+        xesc_driver_old
         xesc_msgs
         xesc_interface
         xbot_msgs
